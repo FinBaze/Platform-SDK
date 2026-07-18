@@ -1,0 +1,61 @@
+query SdkProjects(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: ProjectFilter!
+  $sorting: [ProjectSort!]
+) {
+  projects(
+    paging: { first: $first, after: $after }
+    filter: $filter
+    sorting: $sorting
+  ) {
+    edges {
+      node {
+        id
+        name
+        start
+        end
+        relationId
+        created
+        updated
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkProject($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    start
+    end
+    relationId
+    created
+    updated
+  }
+}
+
+mutation SdkCreateProject($profileId: ID!, $input: CreateProjectInput!) {
+  createOneProject(profileId: $profileId, input: $input) {
+    id
+    name
+  }
+}
+
+mutation SdkUpdateProject($input: UpdateOneProjectInput!) {
+  updateOneProject(input: $input) {
+    id
+    name
+    updated
+  }
+}
+
+mutation SdkDeleteProject($id: ID!) {
+  deleteOneProject(input: { id: $id }) {
+    id
+  }
+}

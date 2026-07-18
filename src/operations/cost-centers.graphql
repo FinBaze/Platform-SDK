@@ -1,0 +1,59 @@
+query SdkCostCenters(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: CostCenterFilter!
+  $sorting: [CostCenterSort!]
+) {
+  costCenters(
+    paging: { first: $first, after: $after }
+    filter: $filter
+    sorting: $sorting
+  ) {
+    edges {
+      node {
+        id
+        number
+        name
+        created
+        updated
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkCostCenter($id: ID!) {
+  costCenter(id: $id) {
+    id
+    number
+    name
+    created
+    updated
+  }
+}
+
+mutation SdkCreateCostCenter($profileId: ID!, $input: CreateCostCenterInput!) {
+  createOneCostCenter(profileId: $profileId, input: $input) {
+    id
+    number
+    name
+  }
+}
+
+mutation SdkUpdateCostCenter($input: UpdateOneCostCenterInput!) {
+  updateOneCostCenter(input: $input) {
+    id
+    number
+    name
+    updated
+  }
+}
+
+mutation SdkDeleteCostCenter($id: ID!) {
+  deleteOneCostCenter(input: { id: $id }) {
+    id
+  }
+}

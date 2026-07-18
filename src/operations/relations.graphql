@@ -1,0 +1,66 @@
+query SdkRelations(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: RelationFilter!
+  $sorting: [RelationSort!]
+) {
+  relations(
+    paging: { first: $first, after: $after }
+    filter: $filter
+    sorting: $sorting
+  ) {
+    edges {
+      node {
+        id
+        legalName
+        firstName
+        lastName
+        email
+        registrationNumber
+        vatNumber
+        created
+        updated
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkRelation($id: ID!) {
+  relation(id: $id) {
+    id
+    legalName
+    firstName
+    lastName
+    email
+    registrationCountry
+    registrationNumber
+    vatNumber
+    created
+    updated
+  }
+}
+
+mutation SdkCreateRelation($profileId: ID!, $input: CreateRelationInput!) {
+  createOneRelation(profileId: $profileId, input: $input) {
+    id
+    legalName
+  }
+}
+
+mutation SdkUpdateRelation($input: UpdateOneRelationInput!) {
+  updateOneRelation(input: $input) {
+    id
+    legalName
+    updated
+  }
+}
+
+mutation SdkDeleteRelation($id: ID!) {
+  deleteOneRelation(input: { id: $id }) {
+    id
+  }
+}

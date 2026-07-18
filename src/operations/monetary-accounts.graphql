@@ -1,0 +1,143 @@
+query SdkMonetaryAccounts(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: MonetaryAccountFilter!
+  $sorting: [MonetaryAccountSort!]
+) {
+  monetaryAccounts(
+    paging: { first: $first, after: $after }
+    filter: $filter
+    sorting: $sorting
+  ) {
+    edges {
+      node {
+        id
+        type
+        name
+        currency
+        iban
+        active
+        balance
+        created
+        updated
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkMonetaryAccount($id: ID!) {
+  monetaryAccount(id: $id) {
+    id
+    type
+    name
+    currency
+    iban
+    bic
+    active
+    balance
+    ledger
+    created
+    updated
+  }
+}
+
+mutation SdkCreateMonetaryAccount(
+  $profileId: ID!
+  $input: CreateMonetaryAccountInput!
+) {
+  createOneMonetaryAccount(profileId: $profileId, input: $input) {
+    id
+    name
+  }
+}
+
+mutation SdkUpdateMonetaryAccount($input: UpdateOneMonetaryAccountInput!) {
+  updateOneMonetaryAccount(input: $input) {
+    id
+    name
+    updated
+  }
+}
+
+mutation SdkDeleteMonetaryAccount($id: ID!) {
+  deleteOneMonetaryAccount(input: { id: $id }) {
+    id
+  }
+}
+
+query SdkMonetaryAccountPayments(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: MonetaryAccountPaymentFilter!
+  $sorting: [MonetaryAccountPaymentSort!]
+) {
+  monetaryAccountPayments(
+    paging: { first: $first, after: $after }
+    filter: $filter
+    sorting: $sorting
+  ) {
+    edges {
+      node {
+        id
+        name
+        description
+        amount
+        date
+        processed
+        monetaryAccountId
+        created
+        updated
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkMonetaryAccountPayment($id: ID!) {
+  monetaryAccountPayment(id: $id) {
+    id
+    name
+    description
+    amount
+    date
+    processed
+    monetaryAccountId
+    created
+    updated
+  }
+}
+
+mutation SdkCreateMonetaryAccountPayment(
+  $monetaryAccountId: ID!
+  $input: CreateMonetaryAccountPaymentInput!
+) {
+  createOneMonetaryAccountPayment(
+    monetaryAccountId: $monetaryAccountId
+    input: $input
+  ) {
+    id
+  }
+}
+
+mutation SdkDeleteMonetaryAccountPayment($id: ID!) {
+  deleteOneMonetaryAccountPayment(input: { id: $id }) {
+    id
+  }
+}
+
+mutation SdkProcessMonetaryAccountPayment(
+  $id: ID!
+  $input: ProcessMonetaryAccountPaymentInput!
+) {
+  processMonetaryAccountPayment(id: $id, input: $input) {
+    id
+    processed
+  }
+}

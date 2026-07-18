@@ -1,0 +1,101 @@
+query SdkPurchaseInvoices(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: PurchaseInvoiceFilter!
+  $sorting: [PurchaseInvoiceSort!]
+) {
+  purchaseInvoices(
+    paging: { first: $first, after: $after }
+    filter: $filter
+    sorting: $sorting
+  ) {
+    edges {
+      node {
+        id
+        uuid
+        number
+        reference
+        currency
+        amount
+        date
+        due
+        paid
+        closed
+        relationId
+        outstanding
+        created
+        updated
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkPurchaseInvoice($id: ID!) {
+  purchaseInvoice(id: $id) {
+    id
+    uuid
+    number
+    reference
+    currency
+    amount
+    date
+    due
+    paid
+    closed
+    relationId
+    outstanding
+    created
+    updated
+    lines {
+      id
+      taxCode
+      tax
+      price
+      quantity
+      discount
+      netAmount
+    }
+  }
+}
+
+mutation SdkCreatePurchaseInvoice(
+  $profileId: ID!
+  $input: CreatePurchaseInvoiceInput!
+) {
+  createOnePurchaseInvoice(profileId: $profileId, input: $input) {
+    id
+    uuid
+    number
+  }
+}
+
+mutation SdkUpdatePurchaseInvoice($input: UpdateOnePurchaseInvoiceInput!) {
+  updateOnePurchaseInvoice(input: $input) {
+    id
+    uuid
+    number
+    updated
+  }
+}
+
+mutation SdkDeletePurchaseInvoice($id: ID!) {
+  deleteOnePurchaseInvoice(input: { id: $id }) {
+    id
+  }
+}
+
+mutation SdkProcessPurchaseInvoice($id: ID!) {
+  processPurchaseInvoice(id: $id) {
+    id
+  }
+}
+
+mutation SdkConfirmPurchaseInvoice($id: ID!) {
+  confirmPurchaseInvoice(id: $id) {
+    id
+  }
+}

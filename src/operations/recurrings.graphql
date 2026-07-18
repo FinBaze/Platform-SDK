@@ -1,0 +1,66 @@
+query SdkRecurrings(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: RecurringFilter!
+  $sorting: [RecurringSort!]
+) {
+  recurrings(
+    paging: { first: $first, after: $after }
+    filter: $filter
+    sorting: $sorting
+  ) {
+    edges {
+      node {
+        id
+        uuid
+        name
+        frequency
+        currency
+        relationId
+        created
+        updated
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkRecurring($id: ID!) {
+  recurring(id: $id) {
+    id
+    uuid
+    name
+    frequency
+    currency
+    relationId
+    startDate
+    endDate
+    created
+    updated
+  }
+}
+
+mutation SdkCreateRecurring($profileId: ID!, $input: CreateRecurringInput!) {
+  createOneRecurring(profileId: $profileId, input: $input) {
+    id
+    uuid
+    name
+  }
+}
+
+mutation SdkUpdateRecurring($input: UpdateOneRecurringInput!) {
+  updateOneRecurring(input: $input) {
+    id
+    name
+    updated
+  }
+}
+
+mutation SdkDeleteRecurring($id: ID!) {
+  deleteOneRecurring(input: { id: $id }) {
+    id
+  }
+}

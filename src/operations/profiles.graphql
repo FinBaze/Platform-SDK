@@ -1,0 +1,56 @@
+query SdkProfiles(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: ProfileFilter!
+  $sorting: [ProfileSort!]
+) {
+  profiles(
+    paging: { first: $first, after: $after }
+    filter: $filter
+    sorting: $sorting
+  ) {
+    edges {
+      node {
+        id
+        name
+        legalName
+        url
+        currency
+        registrationNumber
+        registrationCountry
+        bookkeeperId
+        created
+        updated
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkProfile($id: ID!) {
+  profile(id: $id) {
+    id
+    name
+    legalName
+    url
+    currency
+    registrationNumber
+    registrationCountry
+    language
+    bookkeeperId
+    created
+    updated
+  }
+}
+
+mutation SdkUpdateProfile($input: UpdateOneProfileInput!) {
+  updateOneProfile(input: $input) {
+    id
+    name
+    legalName
+    updated
+  }
+}

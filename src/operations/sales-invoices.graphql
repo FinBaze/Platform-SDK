@@ -1,0 +1,121 @@
+query SdkSalesInvoices(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: SalesInvoiceFilter!
+  $sorting: [SalesInvoiceSort!]
+) {
+  salesInvoices(
+    paging: { first: $first, after: $after }
+    filter: $filter
+    sorting: $sorting
+  ) {
+    edges {
+      node {
+        id
+        uuid
+        number
+        reference
+        currency
+        date
+        due
+        paid
+        closed
+        relationId
+        outstanding
+        created
+        updated
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkSalesInvoice($id: ID!) {
+  salesInvoice(id: $id) {
+    id
+    uuid
+    number
+    reference
+    currency
+    date
+    due
+    paid
+    closed
+    bookingDate
+    legalName
+    firstName
+    lastName
+    email
+    relationId
+    vatNumber
+    locked
+    memo
+    footer
+    outstanding
+    created
+    updated
+    lines {
+      id
+      name
+      description
+      taxCode
+      tax
+      price
+      quantity
+      discount
+      netAmount
+    }
+  }
+}
+
+mutation SdkCreateSalesInvoice(
+  $profileId: ID!
+  $input: CreateSalesInvoiceInput!
+) {
+  createOneSalesInvoice(profileId: $profileId, input: $input) {
+    id
+    uuid
+    number
+  }
+}
+
+mutation SdkUpdateSalesInvoice($input: UpdateOneSalesInvoiceInput!) {
+  updateOneSalesInvoice(input: $input) {
+    id
+    uuid
+    number
+    reference
+    updated
+  }
+}
+
+mutation SdkDeleteSalesInvoice($id: ID!) {
+  deleteOneSalesInvoice(input: { id: $id }) {
+    id
+  }
+}
+
+mutation SdkCloseSalesInvoice($id: ID!, $send: Boolean) {
+  closeSalesInvoice(id: $id, send: $send) {
+    id
+    closed
+  }
+}
+
+mutation SdkReopenSalesInvoice($id: ID!) {
+  reopenSalesInvoice(id: $id) {
+    id
+    closed
+  }
+}
+
+mutation SdkCreditSalesInvoice($id: ID!, $close: Boolean) {
+  creditSalesInvoice(id: $id, close: $close) {
+    id
+    uuid
+    number
+  }
+}
