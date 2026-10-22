@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     graphql: 'src/graphql.ts',
+    operations: 'src/operations-entry.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,

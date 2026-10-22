@@ -10,4 +10,6 @@
 - **Webhooks.** `webhooks.constructEvent` and `generateTestHeader` (WebCrypto).
 - **OAuth.** `Finbaze.oauth({ clientId })`: authorize URL, PKCE, code exchange, refresh; `decodeAccessToken`.
 
-Not yet: `filings.list` / `retrieve` / `paymentInstruction` / `pdf` (the API has no root query for them), generated `finbaze.operations`.
+- **Operations.** `@finbaze/platform-sdk/operations`: a typed function for every operation a platform key or token can reach (separate entry point; `finbaze.operations` as a property would have put about 160 KB gzipped into every bundle).
+
+Not yet: `filings.list` / `retrieve` / `paymentInstruction` / `pdf` (the API has no root query for them).

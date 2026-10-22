@@ -1,2 +1,3 @@
 node_modules
 dist
+/src/operations-generated/types.ts

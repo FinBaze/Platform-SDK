@@ -138,6 +138,17 @@ const refreshed = await oauth.refresh(tokens.refresh_token!);
 const client = new Finbaze({ accessToken: tokens.access_token });
 ```
 
+## Every operation, typed
+
+```ts
+import { operations } from "@finbaze/platform-sdk/operations";
+
+const ops = operations(finbaze);
+const { platformCompany } = await ops.platformCompany({ externalId: "acme-1" });
+```
+
+One typed function per root field a platform key or token can reach (about 850), generated from the schema and selecting scalar fields to depth 2. It is a separate entry point because it is large (about 160 KB gzipped); the core client does not include it. For other selections use `finbaze.graphql`.
+
 ## Errors
 
 | Class | When |
