@@ -1,0 +1,192 @@
+query SdkBankAccounts($first: Int!, $after: ConnectionCursor, $filter: MonetaryAccountFilter!) {
+  monetaryAccounts(paging: { first: $first, after: $after }, filter: $filter) {
+    edges {
+      node {
+        id
+        name
+        iban
+        currency
+        type
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkBankAccount($id: ID!) {
+  monetaryAccount(id: $id) {
+    id
+    name
+    iban
+    currency
+    type
+  }
+}
+
+fragment SdkTransactionFields on MonetaryAccountPayment {
+  id
+  monetaryAccountId
+  externalId
+  date
+  amount
+  name
+  description
+  iban
+  processed
+}
+
+query SdkTransactions(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: MonetaryAccountPaymentFilter!
+  $sorting: [MonetaryAccountPaymentSort!]
+) {
+  monetaryAccountPayments(paging: { first: $first, after: $after }, filter: $filter, sorting: $sorting) {
+    edges {
+      node {
+        ...SdkTransactionFields
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkTransaction($id: ID!) {
+  monetaryAccountPayment(id: $id) {
+    ...SdkTransactionFields
+  }
+}
+
+query SdkBookingSummaries($profileId: ID!, $lookups: [BookingLookupInput!]!) {
+  bookingSummaries(profileId: $profileId, lookups: $lookups) {
+    transactionId
+    bankAccountId
+    externalId
+    processed
+    bookingKind
+    categoryLabel
+    ledgerAccountCode
+    vatLabel
+    receiptStatus
+    suggestion
+  }
+}
+
+fragment SdkDocumentFields on ProcessDocument {
+  id
+  senderName
+  summary
+  receivedDate
+  processed
+  rejected
+  rejectedReason
+  processing
+  purchaseInvoiceId
+  created
+}
+
+query SdkDocuments(
+  $first: Int!
+  $after: ConnectionCursor
+  $filter: ProcessDocumentFilter!
+  $sorting: [ProcessDocumentSort!]
+) {
+  processDocuments(paging: { first: $first, after: $after }, filter: $filter, sorting: $sorting) {
+    edges {
+      node {
+        ...SdkDocumentFields
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query SdkDocument($id: ID!) {
+  processDocument(id: $id) {
+    ...SdkDocumentFields
+  }
+}
+
+mutation SdkUploadDocuments($profileId: ID!, $files: [ProcessDocumentUploadInput!]!) {
+  uploadProcessDocuments(profileId: $profileId, files: $files) {
+    ...SdkDocumentFields
+  }
+}
+
+mutation SdkUploadReceiptForTransaction($monetaryAccountPaymentId: ID!, $file: ProcessDocumentUploadInput!, $contextText: String) {
+  uploadProcessDocumentForPayment(monetaryAccountPaymentId: $monetaryAccountPaymentId, file: $file, contextText: $contextText) {
+    purchaseInvoiceId
+    processDocument {
+      ...SdkDocumentFields
+    }
+  }
+}
+
+query SdkTaxCalendar($profileId: ID!, $year: Int!) {
+  taxFilingOverview(profileId: $profileId, year: $year) {
+    year
+    rows {
+      obligationId
+      obligationType
+      filingType
+      required
+      frequency
+      supported
+      cells {
+        startMonth
+        colSpan
+        from
+        to
+        label
+        status
+        filingId
+      }
+    }
+    otherFilings {
+      id
+      filingType
+      status
+      submittedAt
+      createdAt
+      amountDue
+    }
+  }
+}
+
+query SdkTaxFilingPaymentSummary($filingId: ID!) {
+  taxFilingPaymentSummary(filingId: $filingId) {
+    amountDue
+    amountPaid
+    amountOpen
+    isPaid
+  }
+}
+
+query SdkActionItems($profileId: ID!) {
+  profileTodoSummary(profileId: $profileId) {
+    totalCount
+    urgentCount
+    readyCount
+    blockedCount
+    priorityQueue {
+      items {
+        id
+        type
+        label
+        urgency
+        deadline
+        date
+        status
+      }
+    }
+  }
+}

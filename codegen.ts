@@ -2,7 +2,8 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
   overwrite: true,
-  schema: '../../apps/api/schema.gql',
+  // In the monorepo the schema is two levels up; FINBAZE_SCHEMA overrides it.
+  schema: process.env.FINBAZE_SCHEMA ?? '../../apps/api/schema.gql',
   documents: ['src/operations/**/*.graphql'],
   ignoreNoDocuments: true,
   generates: {

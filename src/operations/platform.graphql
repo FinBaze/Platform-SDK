@@ -1,0 +1,270 @@
+fragment SdkPlatformCompanyFields on PlatformCompany {
+  id
+  platformId
+  externalId
+  name
+  legalName
+  registrationCountry
+  registrationNumber
+  legalForm
+  currency
+  language
+  created
+  updated
+}
+
+fragment SdkPlatformUserFields on PlatformUser {
+  id
+  platformId
+  externalUserId
+  firstName
+  lastName
+  language
+  disabledAt
+  created
+  access {
+    profileId
+    externalId
+    role
+  }
+}
+
+fragment SdkEmbedSessionFields on EmbedSession {
+  id
+  companyId
+  platformUserId
+  kind
+  status
+  origin
+  expiresAt
+  exchangedAt
+  revokedAt
+  revokedReason
+  created
+  components {
+    component
+    features
+  }
+}
+
+mutation SdkCreatePlatformCompany($input: CreatePlatformCompanyInput!) {
+  createPlatformCompany(input: $input) {
+    created
+    company {
+      ...SdkPlatformCompanyFields
+    }
+    prefill {
+      source
+      matched
+      fields
+    }
+  }
+}
+
+mutation SdkUpdatePlatformCompany($input: UpdatePlatformCompanyInput!) {
+  updatePlatformCompany(input: $input) {
+    ...SdkPlatformCompanyFields
+  }
+}
+
+query SdkPlatformCompany($profileId: ID, $externalId: String) {
+  platformCompany(profileId: $profileId, externalId: $externalId) {
+    ...SdkPlatformCompanyFields
+  }
+}
+
+query SdkPlatformCompanies($first: Int!, $after: String, $filter: PlatformCompanyFilter) {
+  platformCompanies(first: $first, after: $after, filter: $filter) {
+    hasMore
+    nextCursor
+    edges {
+      node {
+        ...SdkPlatformCompanyFields
+      }
+    }
+  }
+}
+
+query SdkOnboardingRequirements($profileId: ID!) {
+  onboardingRequirements(profileId: $profileId) {
+    key
+    status
+  }
+}
+
+mutation SdkUpsertPlatformUser($input: UpsertPlatformUserInput!) {
+  upsertPlatformUser(input: $input) {
+    ...SdkPlatformUserFields
+  }
+}
+
+query SdkPlatformUser($userId: ID, $externalUserId: String) {
+  platformUser(userId: $userId, externalUserId: $externalUserId) {
+    ...SdkPlatformUserFields
+  }
+}
+
+query SdkPlatformUsers($first: Int!, $after: String, $profileId: ID) {
+  platformUsers(first: $first, after: $after, profileId: $profileId) {
+    hasMore
+    nextCursor
+    edges {
+      node {
+        ...SdkPlatformUserFields
+      }
+    }
+  }
+}
+
+mutation SdkSetPlatformUserAccess($input: SetPlatformUserAccessInput!) {
+  setPlatformUserAccess(input: $input) {
+    profileId
+    externalId
+    role
+  }
+}
+
+mutation SdkRemovePlatformUserAccess($userId: ID!, $profileId: ID!) {
+  removePlatformUserAccess(userId: $userId, profileId: $profileId)
+}
+
+mutation SdkCreatePlatformUserToken($input: CreatePlatformUserTokenInput!) {
+  createPlatformUserToken(input: $input) {
+    accessToken
+    tokenType
+    expiresAt
+    scopes
+  }
+}
+
+mutation SdkCreateEmbedSession($input: CreateEmbedSessionInput!) {
+  createEmbedSession(input: $input) {
+    clientSecret
+    expiresAt
+    session {
+      ...SdkEmbedSessionFields
+    }
+  }
+}
+
+query SdkEmbedSession($id: ID!) {
+  embedSession(id: $id) {
+    ...SdkEmbedSessionFields
+  }
+}
+
+query SdkEmbedSessions($first: Int!, $after: String, $filter: EmbedSessionFilterInput) {
+  embedSessions(first: $first, after: $after, filter: $filter) {
+    hasMore
+    nextCursor
+    edges {
+      node {
+        ...SdkEmbedSessionFields
+      }
+    }
+  }
+}
+
+mutation SdkRevokeEmbedSession($id: ID!) {
+  revokeEmbedSession(id: $id) {
+    ...SdkEmbedSessionFields
+  }
+}
+
+mutation SdkRevokeEmbedSessionsForUser($platformUserId: ID!, $companyId: ID) {
+  revokeEmbedSessionsForUser(platformUserId: $platformUserId, companyId: $companyId)
+}
+
+query SdkPlatformFeatureAllowance {
+  platformFeatureAllowance {
+    platformId
+    version
+    note
+    updated
+    features {
+      key
+      name
+      description
+      group
+      state
+    }
+  }
+}
+
+query SdkPlatformFeatureLimits($profileId: ID) {
+  platformFeatureLimits(profileId: $profileId) {
+    key
+    level
+    profileId
+    hidden
+    updated
+  }
+}
+
+mutation SdkSetPlatformFeatureLimit($input: SetPlatformFeatureLimitInput!) {
+  setPlatformFeatureLimit(input: $input) {
+    key
+    level
+    profileId
+    hidden
+    updated
+  }
+}
+
+query SdkPlatformCompanyFeatures($profileId: ID!) {
+  platformCompanyFeatures(profileId: $profileId) {
+    key
+    enabled
+    source
+    blockedBy
+  }
+}
+
+query SdkPlatformUsage($month: String) {
+  platformUsage(month: $month) {
+    platformId
+    month
+    status
+    currency
+    activeCompanies
+    inactiveCompanies
+    ratePerActiveCompanyMinor
+    aiBilledMinor
+    minimumTopUpMinor
+    totalMinor
+    pilot
+    computedAt
+  }
+}
+
+query SdkPlatformUsageCompanies($month: String, $first: Int!, $after: ID) {
+  platformUsage(month: $month) {
+    companies(first: $first, after: $after) {
+      profileId
+      externalId
+      reasons
+    }
+  }
+}
+
+query SdkPlatformAllowedOrigins {
+  platformAllowedOrigins {
+    id
+    origin
+    kind
+    created
+  }
+}
+
+mutation SdkAddPlatformAllowedOrigin($origin: String!) {
+  addPlatformAllowedOrigin(origin: $origin) {
+    id
+    origin
+    kind
+    created
+  }
+}
+
+mutation SdkRemovePlatformAllowedOrigin($id: ID!) {
+  removePlatformAllowedOrigin(id: $id)
+}

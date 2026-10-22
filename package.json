@@ -1,7 +1,7 @@
 {
   "name": "@finbaze/platform-sdk",
-  "version": "0.1.0",
-  "description": "FinBaze platform SDK for the v2 GraphQL API.",
+  "version": "1.0.0",
+  "description": "FinBaze platform SDK: companies, users, embed sessions, webhooks and the v2 GraphQL API.",
   "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
@@ -10,14 +10,24 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./graphql": {
-      "types": "./dist/graphql.d.ts",
-      "import": "./dist/graphql.js",
-      "require": "./dist/graphql.cjs"
+      "import": {
+        "types": "./dist/graphql.d.ts",
+        "default": "./dist/graphql.js"
+      },
+      "require": {
+        "types": "./dist/graphql.d.cts",
+        "default": "./dist/graphql.cjs"
+      }
     }
   },
   "files": [
@@ -30,13 +40,17 @@
     "dev": "tsup --watch",
     "test": "jest --config jest.config.cjs --watchman=false",
     "lint": "echo \"(no lint configured)\" && exit 0",
-    "clean": "rm -rf dist src/generated"
+    "clean": "rm -rf dist src/generated",
+    "typecheck": "tsc --noEmit",
+    "size": "node scripts/check-size.mjs",
+    "attw": "attw --pack . --profile node16"
   },
   "dependencies": {
     "@graphql-typed-document-node/core": "^3.2.0",
     "graphql": "^16.14.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@graphql-codegen/cli": "^7.1.0",
     "@graphql-codegen/client-preset": "^6.0.1",
     "@types/jest": "^29.5.14",
