@@ -10,7 +10,7 @@ import {
   type FinbazeGraphQLErrorDetail,
 } from './errors.js';
 
-export const SDK_VERSION = '1.0.0';
+export const SDK_VERSION = '1.1.0';
 /** Sent as `FinBaze-Version`; constant per SDK major. The API ignores it until it supports dated versions. */
 export const DEFAULT_API_VERSION = '2026-11-01';
 export const LIVE_BASE_URL = 'https://api.platform.finbaze.com';
@@ -83,6 +83,11 @@ function parseRetryAfter(value: string | null): number | undefined {
   if (!value) return undefined;
   const seconds = Number(value);
   return Number.isFinite(seconds) ? seconds : undefined;
+}
+
+function messageOf(data: unknown): string | undefined {
+  const message = (data as { message?: unknown } | undefined)?.message;
+  return typeof message === 'string' ? message : Array.isArray(message) ? message.join(', ') : undefined;
 }
 
 const sleepFor = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -166,6 +171,54 @@ export class FinbazeHttpClient {
         await sleepFor(wait);
       }
     }
+  }
+
+  /**
+   * An authenticated REST call (bulk uploads and statement files). The body is sent as is; the answer is
+   * parsed JSON. Errors carry the API's `{ message, code }` body. Not retried: pass an `Idempotency-Key`
+   * and call again yourself.
+   */
+  async rest<TData = unknown>(
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    path: string,
+    init: { body?: string | Uint8Array; headers?: Record<string, string>; query?: Record<string, string | number | boolean | undefined>; signal?: AbortSignal } = {},
+  ): Promise<{ status: number; data: TData; headers: Headers }> {
+    const accessToken = await this.tokenProvider();
+    const query = Object.entries(init.query ?? {})
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+      .join('&');
+    const { response, text } = await this.fetchText(`${this.baseUrl}/v2${path}${query ? `?${query}` : ''}`, {
+      method,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        'FinBaze-Version': this.apiVersion,
+        'User-Agent': this.userAgent,
+        ...(init.headers ?? {}),
+      },
+      body: init.body as BodyInit | undefined,
+      signal: init.signal,
+    });
+    const requestId = response.headers.get('x-request-id') ?? undefined;
+    let data: unknown;
+    try {
+      data = text.length > 0 ? JSON.parse(text) : undefined;
+    } catch {
+      data = undefined;
+    }
+    if (response.status === 401) {
+      this.tokenCache = null;
+      throw new FinbazeAuthenticationError(messageOf(data) ?? 'Unauthenticated', { requestId });
+    }
+    if (response.status === 429) {
+      throw new FinbazeRateLimitError('Too many requests', { retryAfterSeconds: parseRetryAfter(response.headers.get('retry-after')), requestId });
+    }
+    if (!response.ok) {
+      const body = (data ?? {}) as { code?: string };
+      throw new FinbazeError(`${messageOf(data) ?? `HTTP ${response.status}`}${body.code ? ` (${body.code})` : ''}`, { requestId });
+    }
+    return { status: response.status, data: data as TData, headers: response.headers };
   }
 
   /** `null` = do not retry. */

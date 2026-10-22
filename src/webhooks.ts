@@ -17,6 +17,25 @@ export type WebhookEvent<TType extends string = string, TData = Record<string, u
   data: TData;
 };
 
+/** The envelope of a platform webhook (`Finbaze.webhooks.constructPlatformEvent`). */
+export type PlatformWebhookEvent<TType extends string = string, TData = Record<string, unknown>> = {
+  /** `evt_…`: the same for every retry and endpoint. Dedupe on this. */
+  id: string;
+  object: 'event';
+  type: TType;
+  apiVersion: string;
+  created: string;
+  occurredAt: string;
+  /** Ordered per platform; the same number the events API pages by. */
+  sequence: string;
+  livemode: boolean;
+  platform: string;
+  company: { id: string; externalId: string | null } | null;
+  request: { id: string } | null;
+  /** `object` is the snapshot taken when the event was recorded; `details` carries event specifics. */
+  data: TData & { object?: Record<string, unknown>; details?: Record<string, unknown> };
+};
+
 const DEFAULT_TOLERANCE_SECONDS = 300;
 const encoder = new TextEncoder();
 
@@ -61,28 +80,58 @@ export class Webhooks {
   async constructEvent(
     rawBody: string | Uint8Array,
     signatureHeader: string,
-    secret: string,
+    secret: string | string[],
     opts: { toleranceSeconds?: number; nowSeconds?: number } = {},
   ): Promise<WebhookEvent> {
+    return this.verified<WebhookEvent>(rawBody, signatureHeader, secret, opts);
+  }
+
+  /**
+   * The same check for a platform webhook endpoint. While you rotate a secret, pass the new and the old one
+   * (`[next, previous]`): the header then carries a signature per secret and either verifies.
+   */
+  async constructPlatformEvent<TType extends string = string, TData = Record<string, unknown>>(
+    rawBody: string | Uint8Array,
+    signatureHeader: string,
+    secret: string | string[],
+    opts: { toleranceSeconds?: number; nowSeconds?: number } = {},
+  ): Promise<PlatformWebhookEvent<TType, TData>> {
+    return this.verified<PlatformWebhookEvent<TType, TData>>(rawBody, signatureHeader, secret, opts);
+  }
+
+  private async verified<T>(
+    rawBody: string | Uint8Array,
+    signatureHeader: string,
+    secret: string | string[],
+    opts: { toleranceSeconds?: number; nowSeconds?: number },
+  ): Promise<T> {
     const body = text(rawBody);
-    const parts = new Map<string, string>();
+    // During a secret rotation the header carries one `v1` per live secret.
+    const v1s: string[] = [];
+    let timestamp: string | undefined;
     for (const part of (signatureHeader ?? '').split(',')) {
       const [k, ...rest] = part.trim().split('=');
-      if (k) parts.set(k, rest.join('='));
+      if (k === 't') timestamp = rest.join('=');
+      else if (k === 'v1') v1s.push(rest.join('='));
     }
-    const t = Number(parts.get('t'));
-    const v1 = parts.get('v1');
-    if (!Number.isFinite(t) || !v1) throw new FinbazeSignatureVerificationError('The signature header is malformed.');
+    const t = Number(timestamp);
+    if (!Number.isFinite(t) || v1s.length === 0) throw new FinbazeSignatureVerificationError('The signature header is malformed.');
 
     const now = opts.nowSeconds ?? Math.floor(Date.now() / 1000);
     if (Math.abs(now - t) > (opts.toleranceSeconds ?? DEFAULT_TOLERANCE_SECONDS)) {
       throw new FinbazeSignatureVerificationError('The timestamp is outside the tolerance window.');
     }
-    if (!safeEqual(await hmacHex(secret, `${t}.${body}`), v1)) {
+    const secrets = Array.isArray(secret) ? secret : [secret];
+    let matched = false;
+    for (const candidate of secrets) {
+      const expected = await hmacHex(candidate, `${t}.${body}`);
+      if (v1s.some((v1) => safeEqual(expected, v1))) matched = true;
+    }
+    if (!matched) {
       throw new FinbazeSignatureVerificationError('The signature does not match the payload.');
     }
     try {
-      return JSON.parse(body) as WebhookEvent;
+      return JSON.parse(body) as T;
     } catch {
       throw new FinbazeSignatureVerificationError('The payload is not valid JSON.');
     }

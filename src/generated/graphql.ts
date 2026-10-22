@@ -16,6 +16,69 @@ export type Address = {
   thoroughfare?: string | null | undefined;
 };
 
+export type AddressUpsertFields = {
+  address2?: string | null | undefined;
+  building?: string | null | undefined;
+  country?: Country | null | undefined;
+  locality?: string | null | undefined;
+  postalCode?: string | null | undefined;
+  premise?: string | null | undefined;
+  state?: string | null | undefined;
+  subPremise?: string | null | undefined;
+  thoroughfare?: string | null | undefined;
+};
+
+export type BankAccountFeedInput = {
+  bic?: string | null | undefined;
+  currency: Currency;
+  externalId: string;
+  iban?: string | null | undefined;
+  metadata?: Record<string, unknown> | null | undefined;
+  name: string;
+  openedOn?: string | null | undefined;
+  type?: FeedAccountType | null | undefined;
+};
+
+export type BankBalanceInput = {
+  /** Minor units (JS-safe integer). */
+  amountMinor: number;
+  currency: Currency;
+  date: string;
+  type: BankBalanceType;
+};
+
+export type BankBalanceType =
+  | 'closing_available'
+  | 'closing_booked'
+  | 'interim_booked'
+  | 'opening_booked';
+
+export type BankTransactionCodeInput = {
+  domain?: string | null | undefined;
+  family?: string | null | undefined;
+  proprietary?: string | null | undefined;
+  subFamily?: string | null | undefined;
+};
+
+export type BankTransactionFeedInput = {
+  amountMinor: number;
+  bankReference?: string | null | undefined;
+  bankTransactionCode?: BankTransactionCodeInput | null | undefined;
+  bookingDate: string;
+  card?: CardDetailsInput | null | undefined;
+  counterparty?: CounterpartyInput | null | undefined;
+  currency: Currency;
+  description?: string | null | undefined;
+  endToEndId?: string | null | undefined;
+  externalId: string;
+  fx?: FxInput | null | undefined;
+  metadata?: Record<string, unknown> | null | undefined;
+  /** externalId of the transaction this one reverses. */
+  reverses?: string | null | undefined;
+  status?: FeedTransactionStatus | null | undefined;
+  valueDate?: string | null | undefined;
+};
+
 export type BillingManagedBy =
   | 'apple'
   | 'platform'
@@ -38,6 +101,13 @@ export type BillingManagedByFilterComparison = {
   notIn?: Array<BillingManagedBy> | null | undefined;
   notLike?: BillingManagedBy | null | undefined;
 };
+
+export type BookingActorKind =
+  | 'ai'
+  | 'match'
+  | 'partner'
+  | 'rule'
+  | 'user';
 
 export type BookingLookupInput = {
   /** With externalId: the partner’s own id. */
@@ -76,10 +146,41 @@ export type BooleanFieldComparison = {
   isNot?: boolean | null | undefined;
 };
 
+export type CardDetailsInput = {
+  last4?: string | null | undefined;
+  mcc?: string | null | undefined;
+  merchantCountry?: string | null | undefined;
+  merchantId?: string | null | undefined;
+  merchantName?: string | null | undefined;
+};
+
+export type CompanyDocumentKind =
+  | 'annual_accounts_pdf'
+  | 'credit_note_pdf'
+  | 'payslip_pdf'
+  | 'purchase_invoice_original'
+  | 'quote_pdf'
+  | 'receipt_original'
+  | 'reminder_pdf'
+  | 'report_pdf'
+  | 'report_xlsx'
+  | 'sales_invoice_pdf'
+  | 'sales_invoice_ubl'
+  | 'tax_filing_pdf'
+  | 'tax_filing_receipt'
+  | 'xaf'
+  | 'year_document_pdf';
+
+export type CompanyRef = {
+  externalId?: string | null | undefined;
+  id?: string | number | null | undefined;
+};
+
 export type CostCenterFilter = {
   active?: BooleanFieldComparison | null | undefined;
   and?: Array<CostCenterFilter> | null | undefined;
   created?: DateFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   name?: StringFieldComparison | null | undefined;
   number?: StringFieldComparison | null | undefined;
@@ -175,12 +276,25 @@ export type CostCenterSort = {
 export type CostCenterSortFields =
   | 'active'
   | 'created'
+  | 'externalId'
   | 'id'
   | 'name'
   | 'number'
   | 'ownerAccountId'
   | 'profileId'
   | 'updated';
+
+export type CostCenterUpsertFields = {
+  active?: boolean | null | undefined;
+  name: string;
+  number: string;
+};
+
+export type CounterpartyInput = {
+  bic?: string | null | undefined;
+  iban?: string | null | undefined;
+  name?: string | null | undefined;
+};
 
 export type Country =
   | 'AD'
@@ -470,6 +584,37 @@ export type CreateEmbedSessionInput = {
   user?: EmbedSessionUserInput | null | undefined;
 };
 
+export type CreateExportDestinationInput = {
+  bucket?: string | null | undefined;
+  /** { accessKeyId, secretAccessKey } or { sasUrl }. Stored encrypted, never returned. */
+  credentials: Record<string, unknown>;
+  credentialsExpireAt?: string | null | undefined;
+  /** https endpoint of an S3-compatible service. */
+  endpoint?: string | null | undefined;
+  key: string;
+  kmsKeyId?: string | null | undefined;
+  prefix?: string | null | undefined;
+  region?: string | null | undefined;
+  serverSideEncryption?: string | null | undefined;
+  /** s3 (also S3-compatible: GCS interop, OVH, MinIO) or azure_blob. */
+  type: string;
+};
+
+export type CreateExportScheduleInput = {
+  companyIds?: Array<string | number> | null | undefined;
+  companyScope?: string | null | undefined;
+  compression?: string | null | undefined;
+  /** Default 0 3 * * *; at most once an hour. */
+  cron?: string | null | undefined;
+  datasets: Array<string>;
+  destinationKey: string;
+  /** parquet, csv or ndjson. */
+  format?: string;
+  key: string;
+  pathTemplate?: string | null | undefined;
+  timezone?: string | null | undefined;
+};
+
 export type CreateMonetaryAccountInput = {
   active?: boolean | null | undefined;
   bic?: string | null | undefined;
@@ -542,6 +687,14 @@ export type CreatePlatformUserTokenInput = {
   /** 60–3600, default 900 */
   ttlSeconds?: number | null | undefined;
   userId?: string | number | null | undefined;
+};
+
+export type CreatePlatformWebhookEndpointInput = {
+  description?: string | null | undefined;
+  /** Event types, or `*` for every available type. */
+  eventTypes: Array<string>;
+  failoverUrl?: string | null | undefined;
+  url: string;
 };
 
 export type CreateProjectInput = {
@@ -861,6 +1014,21 @@ export type CurrentAccountKindFilterComparison = {
   notLike?: CurrentAccountKind | null | undefined;
 };
 
+export type DataSourceCadence =
+  | 'business_daily'
+  | 'daily'
+  | 'hourly'
+  | 'realtime';
+
+export type DataSourceType =
+  | 'bank_feed'
+  | 'card_feed'
+  | 'custom_records'
+  | 'hours_feed'
+  | 'payout_feed'
+  | 'purchase_feed'
+  | 'sales_feed';
+
 export type DateFieldComparison = {
   between?: DateFieldComparisonBetween | null | undefined;
   eq?: string | null | undefined;
@@ -879,6 +1047,20 @@ export type DateFieldComparison = {
 export type DateFieldComparisonBetween = {
   lower: string;
   upper: string;
+};
+
+export type DefineRecordTypeInput = {
+  deepLinkTemplate?: string | null | undefined;
+  /** For example `Shipment {{data.reference}}`. */
+  displayTemplate: string;
+  initialState: string;
+  key: string;
+  name: string;
+  /** JSON Schema for `data`; an object schema. */
+  schema: Record<string, unknown>;
+  states: Array<string>;
+  /** Allowed moves, `{ "from": ["to", …] }`. Left out: any state to any. */
+  transitions?: Record<string, unknown> | null | undefined;
 };
 
 export type DeveloperKind =
@@ -1092,11 +1274,77 @@ export type EmbedVatReturnFeaturesInput = {
   suppletie?: boolean | null | undefined;
 };
 
+export type EmployeeGenderInput =
+  | 'female'
+  | 'male'
+  | 'unknown';
+
+export type EmployeeUpsertFields = {
+  address?: AddressUpsertFields | null | undefined;
+  /** ISO date. */
+  dateOfBirth?: string | null | undefined;
+  email?: string | null | undefined;
+  /** Defaults to the next free personnel number. */
+  employeeNumber?: string | null | undefined;
+  firstName: string;
+  gender?: EmployeeGenderInput | null | undefined;
+  lastName: string;
+  middleName?: string | null | undefined;
+  nationality?: string | null | undefined;
+  phone?: string | null | undefined;
+};
+
+export type EmploymentCallTypeInput =
+  | 'min_max'
+  | 'none'
+  | 'on_call';
+
+export type EmploymentContractTypeInput =
+  | 'fixed_term'
+  | 'indefinite';
+
+export type EmploymentUpsertFields = {
+  callType?: EmploymentCallTypeInput | null | undefined;
+  contractType: EmploymentContractTypeInput;
+  employee: ObjectRef;
+  /** ISO date. Required for a fixed-term contract. */
+  endDate?: string | null | undefined;
+  grossWageFrequency?: GrossWageFrequencyInput | null | undefined;
+  /** Contractual gross wage in cents for the frequency. */
+  grossWageMinor?: number | null | undefined;
+  hoursPerWeek?: number | null | undefined;
+  noticePeriodDays?: number | null | undefined;
+  /** ISO date. */
+  startDate: string;
+  /** Only needed when the company has more than one wage tax obligation. */
+  wageTaxObligationId?: string | number | null | undefined;
+};
+
+export type FeedAccountType =
+  | 'bank'
+  | 'card'
+  | 'psp';
+
+export type FeedHealthStatus =
+  | 'balance_mismatch'
+  | 'delayed'
+  | 'gap'
+  | 'healthy'
+  | 'stopped';
+
+export type FeedTransactionStatus =
+  | 'booked'
+  | 'pending';
+
 export type FinancialYearGranularity =
   | 'half_year'
   | 'month'
   | 'quarter'
   | 'year';
+
+export type FlowTemplateFormat =
+  | 'json'
+  | 'yaml';
 
 export type Frequency =
   | 'bi_monthly'
@@ -1124,6 +1372,18 @@ export type FrequencyFilterComparison = {
   notIn?: Array<Frequency> | null | undefined;
   notLike?: Frequency | null | undefined;
 };
+
+export type FxInput = {
+  originalAmountMinor: number;
+  originalCurrency: Currency;
+  rate?: string | null | undefined;
+};
+
+export type GrossWageFrequencyInput =
+  | 'four_weeks'
+  | 'hour'
+  | 'month'
+  | 'week';
 
 export type IdFilterComparison = {
   eq?: string | number | null | undefined;
@@ -1157,6 +1417,25 @@ export type JsonObjectFilterComparison = {
   notILike?: Record<string, unknown> | null | undefined;
   notIn?: Array<Record<string, unknown>> | null | undefined;
   notLike?: Record<string, unknown> | null | undefined;
+};
+
+export type JournalEntryLineUpsertFields = {
+  /** Debit-positive: positive debits the ledger, negative credits it. Not zero. */
+  amountMinor: number;
+  description?: string | null | undefined;
+  /** Ledger code in the company chart. */
+  ledger: string;
+  name?: string | null | undefined;
+  project?: ObjectRef | null | undefined;
+};
+
+export type JournalEntryUpsertFields = {
+  /** ISO date, 2026-10-17. */
+  date: string;
+  description?: string | null | undefined;
+  /** At least two lines that add up to exactly zero. */
+  lines: Array<JournalEntryLineUpsertFields>;
+  name: string;
 };
 
 export type LoanDirection =
@@ -1340,6 +1619,7 @@ export type MonetaryAccountFilterProfileFilter = {
 export type MonetaryAccountPaymentFilter = {
   amount?: NumberFieldComparison | null | undefined;
   and?: Array<MonetaryAccountPaymentFilter> | null | undefined;
+  bankReference?: StringFieldComparison | null | undefined;
   bic?: StringFieldComparison | null | undefined;
   created?: DateFieldComparison | null | undefined;
   createdBy?: MonetaryAccountPaymentFilterAccountFilter | null | undefined;
@@ -1348,6 +1628,7 @@ export type MonetaryAccountPaymentFilter = {
   currentAccountId?: StringFieldComparison | null | undefined;
   date?: DateFieldComparison | null | undefined;
   description?: StringFieldComparison | null | undefined;
+  endToEndId?: StringFieldComparison | null | undefined;
   externalId?: StringFieldComparison | null | undefined;
   externalProvider?: MonetaryAccountProviderFilterComparison | null | undefined;
   iban?: StringFieldComparison | null | undefined;
@@ -1381,6 +1662,7 @@ export type MonetaryAccountPaymentFilter = {
   taxFiling?: MonetaryAccountPaymentFilterTaxFilingFilter | null | undefined;
   taxFilingId?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
+  valueDate?: StringFieldComparison | null | undefined;
 };
 
 export type MonetaryAccountPaymentFilterAccountFilter = {
@@ -1505,6 +1787,7 @@ export type MonetaryAccountPaymentFilterProjectFilter = {
   created?: DateFieldComparison | null | undefined;
   createdById?: StringFieldComparison | null | undefined;
   end?: DateFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   name?: StringFieldComparison | null | undefined;
   or?: Array<MonetaryAccountPaymentFilterProjectFilter> | null | undefined;
@@ -1525,6 +1808,7 @@ export type MonetaryAccountPaymentFilterPurchaseInvoiceFilter = {
   date?: DateFieldComparison | null | undefined;
   disputed?: DateFieldComparison | null | undefined;
   due?: DateFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   number?: StringFieldComparison | null | undefined;
   or?: Array<MonetaryAccountPaymentFilterPurchaseInvoiceFilter> | null | undefined;
@@ -1543,6 +1827,7 @@ export type MonetaryAccountPaymentFilterRelationFilter = {
   createdById?: StringFieldComparison | null | undefined;
   defaultCostCenterId?: StringFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   language?: StringFieldComparison | null | undefined;
@@ -1597,6 +1882,7 @@ export type MonetaryAccountPaymentFilterSalesInvoiceFilter = {
   due?: DateFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
   entryId?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   footer?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
@@ -1626,6 +1912,7 @@ export type MonetaryAccountPaymentFilterSettlementFilter = {
   createdById?: StringFieldComparison | null | undefined;
   date?: DateFieldComparison | null | undefined;
   description?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   name?: StringFieldComparison | null | undefined;
   or?: Array<MonetaryAccountPaymentFilterSettlementFilter> | null | undefined;
@@ -1665,12 +1952,14 @@ export type MonetaryAccountPaymentSort = {
 
 export type MonetaryAccountPaymentSortFields =
   | 'amount'
+  | 'bankReference'
   | 'bic'
   | 'created'
   | 'createdById'
   | 'currentAccountId'
   | 'date'
   | 'description'
+  | 'endToEndId'
   | 'externalId'
   | 'externalProvider'
   | 'iban'
@@ -1691,17 +1980,20 @@ export type MonetaryAccountPaymentSortFields =
   | 'salesInvoiceId'
   | 'settlementId'
   | 'taxFilingId'
-  | 'updated';
+  | 'updated'
+  | 'valueDate';
 
 export type MonetaryAccountProvider =
   | 'adyen'
   | 'amazon'
   | 'bol'
+  | 'camt052'
   | 'camt053'
   | 'lunchflow'
   | 'mollie'
   | 'mt940'
   | 'paynl'
+  | 'platform'
   | 'shopify'
   | 'spreadsheet'
   | 'stripe';
@@ -1752,6 +2044,7 @@ export type MonetaryAccountSortFields =
 
 export type MonetaryAccountType =
   | 'bank'
+  | 'card'
   | 'cash'
   | 'psp'
   | 'suspense';
@@ -1793,13 +2086,17 @@ export type NumberFieldComparisonBetween = {
   upper: number;
 };
 
+export type ObjectRef = {
+  externalId?: string | null | undefined;
+  id?: string | number | null | undefined;
+};
+
 export type OnboardingRequirementKey =
   | 'bookkeeping_financial_year'
   | 'bookkeeping_ledger_chart'
   | 'company_address'
   | 'company_legal_form'
   | 'company_registration'
-  | 'tax_nl_vat_authorisation'
   | 'tax_obligations'
   | 'tax_uk_vat_hmrc_connection';
 
@@ -1874,10 +2171,25 @@ export type PspProviderFilterComparison = {
   notLike?: PspProvider | null | undefined;
 };
 
+export type PaymentBookingStatus =
+  | 'booked'
+  | 'needs_review'
+  | 'suggested'
+  | 'unbooked';
+
 export type PermissionSet =
   | 'admin'
   | 'member'
   | 'viewer';
+
+export type PlatformBulkJobStatus =
+  | 'cancelled'
+  | 'completed'
+  | 'completed_with_errors'
+  | 'failed'
+  | 'queued'
+  | 'receiving'
+  | 'running';
 
 export type PlatformCompanyFilter = {
   createdAfter?: string | null | undefined;
@@ -1900,13 +2212,83 @@ export type PlatformCompanyTaxObligationInput = {
   type: TaxObligationType;
 };
 
+export type PlatformDeliveryFilter = {
+  companyId?: string | number | null | undefined;
+  createdAfter?: string | null | undefined;
+  createdBefore?: string | null | undefined;
+  status?: Array<string> | null | undefined;
+  types?: Array<string> | null | undefined;
+};
+
+export type PlatformEventFilter = {
+  /** FinBaze id of the company. */
+  companyId?: string | number | null | undefined;
+  createdAfter?: string | null | undefined;
+  createdBefore?: string | null | undefined;
+  objectExternalId?: string | null | undefined;
+  objectId?: string | number | null | undefined;
+  types?: Array<string> | null | undefined;
+};
+
+export type PlatformEventTypeStatus =
+  | 'available'
+  | 'planned';
+
 export type PlatformFeatureLimitLevel =
   | 'company'
   | 'platform';
 
+export type PlatformObjectType =
+  | 'bank_account'
+  | 'bank_transaction'
+  | 'cost_center'
+  | 'custom_record'
+  | 'employee'
+  | 'employment'
+  | 'journal_entry'
+  | 'process_document'
+  | 'product'
+  | 'project'
+  | 'purchase_invoice'
+  | 'quote'
+  | 'relation'
+  | 'sales_invoice'
+  | 'worked_hours';
+
 export type PlatformOriginKind =
   | 'app_scheme'
   | 'web';
+
+export type PlatformReportInput = {
+  /** YYYY-MM-DD; for positions (balance sheet, aged reports). */
+  asOf?: string | null | undefined;
+  compare?: ReportCompare | null | undefined;
+  /** YYYY-MM-DD */
+  from?: string | null | undefined;
+  /** general_ledger: cash, bank, revenue, costs or memorial. */
+  journalType?: string | null | undefined;
+  language?: string | null | undefined;
+  ledgerCode?: string | null | undefined;
+  limit?: number | null | undefined;
+  months?: number | null | undefined;
+  offset?: number | null | undefined;
+  taxFilingId?: string | number | null | undefined;
+  /** YYYY-MM-DD */
+  to?: string | null | undefined;
+  type: PlatformReportType;
+};
+
+export type PlatformReportType =
+  | 'aged_payables'
+  | 'aged_receivables'
+  | 'balance_sheet'
+  | 'cashflow'
+  | 'forecast'
+  | 'general_ledger'
+  | 'kpis'
+  | 'profit_loss'
+  | 'trial_balance'
+  | 'vat_position';
 
 export type PlatformStatus =
   | 'active'
@@ -1969,6 +2351,7 @@ export type ProcessDocumentFilter = {
   enterprise?: ProcessDocumentFilterEnterpriseFilter | null | undefined;
   enterpriseId?: StringFieldComparison | null | undefined;
   entryId?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   extractionModel?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   message?: StringFieldComparison | null | undefined;
@@ -2174,6 +2557,7 @@ export type ProcessDocumentFilterPurchaseInvoiceFilter = {
   date?: DateFieldComparison | null | undefined;
   disputed?: DateFieldComparison | null | undefined;
   due?: DateFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   number?: StringFieldComparison | null | undefined;
   or?: Array<ProcessDocumentFilterPurchaseInvoiceFilter> | null | undefined;
@@ -2192,6 +2576,7 @@ export type ProcessDocumentFilterRelationFilter = {
   createdById?: StringFieldComparison | null | undefined;
   defaultCostCenterId?: StringFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   language?: StringFieldComparison | null | undefined;
@@ -2218,6 +2603,7 @@ export type ProcessDocumentFilterSalesInvoiceFilter = {
   due?: DateFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
   entryId?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   footer?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
@@ -2254,6 +2640,7 @@ export type ProcessDocumentSortFields =
   | 'createdById'
   | 'enterpriseId'
   | 'entryId'
+  | 'externalId'
   | 'extractionModel'
   | 'id'
   | 'message'
@@ -2280,6 +2667,7 @@ export type ProcessDocumentSource =
   | 'email'
   | 'mailbox'
   | 'message'
+  | 'platform'
   | 'upload';
 
 export type ProcessDocumentSourceFilterComparison = {
@@ -2319,6 +2707,27 @@ export type ProcessMonetaryAccountPaymentInput = {
   settlementId?: string | number | null | undefined;
   targetProfileId?: string | number | null | undefined;
   taxFilingId?: string | number | null | undefined;
+};
+
+export type ProductTypeInput =
+  | 'goods'
+  | 'services';
+
+export type ProductUpsertFields = {
+  active?: boolean | null | undefined;
+  code?: string | null | undefined;
+  description?: string | null | undefined;
+  ean?: string | null | undefined;
+  hsCode?: string | null | undefined;
+  name: string;
+  /** Unit prices in minor units by currency, `{ "EUR": 1999 }`. */
+  prices?: Record<string, unknown> | null | undefined;
+  purchaseLedger?: string | null | undefined;
+  salesLedger?: string | null | undefined;
+  sku?: string | null | undefined;
+  /** Default tax code per sell-to country, `{ "NL": "NL_2012_HIGH" }`. */
+  taxCodesByCountry?: Record<string, unknown> | null | undefined;
+  type?: ProductTypeInput | null | undefined;
 };
 
 export type ProfileFilter = {
@@ -2615,6 +3024,7 @@ export type ProjectFilter = {
   createdBy?: ProjectFilterAccountFilter | null | undefined;
   createdById?: StringFieldComparison | null | undefined;
   end?: DateFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   name?: StringFieldComparison | null | undefined;
   or?: Array<ProjectFilter> | null | undefined;
@@ -2739,6 +3149,7 @@ export type ProjectFilterRelationFilter = {
   createdById?: StringFieldComparison | null | undefined;
   defaultCostCenterId?: StringFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   language?: StringFieldComparison | null | undefined;
@@ -2764,12 +3175,22 @@ export type ProjectSortFields =
   | 'created'
   | 'createdById'
   | 'end'
+  | 'externalId'
   | 'id'
   | 'name'
   | 'profileId'
   | 'relationId'
   | 'start'
   | 'updated';
+
+export type ProjectUpsertFields = {
+  /** ISO date or date-time. */
+  end?: string | null | undefined;
+  name: string;
+  relation?: ObjectRef | null | undefined;
+  /** ISO date or date-time. */
+  start?: string | null | undefined;
+};
 
 export type PurchaseInvoiceEventType =
   | 'accepted'
@@ -2812,6 +3233,7 @@ export type PurchaseInvoiceFilter = {
   disputed?: DateFieldComparison | null | undefined;
   due?: DateFieldComparison | null | undefined;
   events?: PurchaseInvoiceFilterPurchaseInvoiceEventFilter | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   notes?: PurchaseInvoiceFilterPurchaseInvoiceNoteFilter | null | undefined;
   number?: StringFieldComparison | null | undefined;
@@ -2948,6 +3370,7 @@ export type PurchaseInvoiceFilterRelationFilter = {
   createdById?: StringFieldComparison | null | undefined;
   defaultCostCenterId?: StringFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   language?: StringFieldComparison | null | undefined;
@@ -2961,6 +3384,24 @@ export type PurchaseInvoiceFilterRelationFilter = {
   standardDueDays?: NumberFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
   uuid?: StringFieldComparison | null | undefined;
+};
+
+export type PurchaseInvoiceLineUpsertFields = {
+  costCenter?: ObjectRef | null | undefined;
+  description?: string | null | undefined;
+  /** Discount per unit, minor units. */
+  discountMinor?: number | null | undefined;
+  /** Defaults to the product purchase ledger. */
+  ledger?: string | null | undefined;
+  name: string;
+  /** Unit price in minor units (cents). */
+  priceMinor: number;
+  product?: ObjectRef | null | undefined;
+  project?: ObjectRef | null | undefined;
+  /** Defaults to 1. */
+  quantity?: number | null | undefined;
+  /** The tax amount is derived from the tax code, never taken from the line. */
+  taxCode: string;
 };
 
 export type PurchaseInvoicePaymentBatchIntervalUnit =
@@ -3027,6 +3468,7 @@ export type PurchaseInvoiceSortFields =
   | 'date'
   | 'disputed'
   | 'due'
+  | 'externalId'
   | 'id'
   | 'number'
   | 'paid'
@@ -3036,6 +3478,20 @@ export type PurchaseInvoiceSortFields =
   | 'scheduled'
   | 'updated'
   | 'uuid';
+
+export type PurchaseInvoiceUpsertFields = {
+  currency: Currency;
+  date: string;
+  due?: string | null | undefined;
+  expectedTotalMinor?: number | null | undefined;
+  /** Confirm (book) the invoice now. Without it the invoice stays a draft. */
+  finalise?: boolean | null | undefined;
+  lines: Array<PurchaseInvoiceLineUpsertFields>;
+  /** The supplier's invoice number. */
+  number?: string | null | undefined;
+  reference?: string | null | undefined;
+  relation?: ObjectRef | null | undefined;
+};
 
 export type QuoteAcceptanceOutcome =
   | 'create_invoice'
@@ -3057,6 +3513,12 @@ export type QuoteAcceptanceOutcomeFilterComparison = {
   notIn?: Array<QuoteAcceptanceOutcome> | null | undefined;
   notLike?: QuoteAcceptanceOutcome | null | undefined;
 };
+
+export type ReceiptStatus =
+  | 'attached'
+  | 'missing'
+  | 'not_required'
+  | 'requested';
 
 export type RecurringCollection =
   | 'automatic'
@@ -3257,6 +3719,7 @@ export type RecurringFilterRelationFilter = {
   createdById?: StringFieldComparison | null | undefined;
   defaultCostCenterId?: StringFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   language?: StringFieldComparison | null | undefined;
@@ -3349,6 +3812,27 @@ export type RecurringSortFields =
   | 'updated'
   | 'uuid';
 
+export type RegisterDataSourceInput = {
+  autoAttach?: boolean | null | undefined;
+  balanceAssertions?: boolean | null | undefined;
+  cadence?: DataSourceCadence | null | undefined;
+  delivery?: Record<string, unknown> | null | undefined;
+  expectedBy?: string | null | undefined;
+  gapThresholdMinutes?: number | null | undefined;
+  historyMonths?: number | null | undefined;
+  key: string;
+  name: string;
+  settings?: Record<string, unknown> | null | undefined;
+  type: DataSourceType;
+};
+
+export type RelationBankAccountUpsertFields = {
+  bic?: string | null | undefined;
+  holderName?: string | null | undefined;
+  iban: string;
+  isActive?: boolean | null | undefined;
+};
+
 export type RelationFilter = {
   and?: Array<RelationFilter> | null | undefined;
   bankAccounts?: RelationFilterRelationBankAccountFilter | null | undefined;
@@ -3358,6 +3842,7 @@ export type RelationFilter = {
   defaultCostCenter?: RelationFilterCostCenterFilter | null | undefined;
   defaultCostCenterId?: StringFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   language?: StringFieldComparison | null | undefined;
@@ -3395,6 +3880,7 @@ export type RelationFilterCostCenterFilter = {
   active?: BooleanFieldComparison | null | undefined;
   and?: Array<RelationFilterCostCenterFilter> | null | undefined;
   created?: DateFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   name?: StringFieldComparison | null | undefined;
   number?: StringFieldComparison | null | undefined;
@@ -3485,6 +3971,7 @@ export type RelationFilterProjectFilter = {
   created?: DateFieldComparison | null | undefined;
   createdById?: StringFieldComparison | null | undefined;
   end?: DateFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   name?: StringFieldComparison | null | undefined;
   or?: Array<RelationFilterProjectFilter> | null | undefined;
@@ -3507,6 +3994,11 @@ export type RelationFilterRelationBankAccountFilter = {
   updated?: DateFieldComparison | null | undefined;
 };
 
+export type RelationKindInput =
+  | 'both'
+  | 'customer'
+  | 'supplier';
+
 export type RelationSort = {
   direction: SortDirection;
   field: RelationSortFields;
@@ -3518,6 +4010,7 @@ export type RelationSortFields =
   | 'createdById'
   | 'defaultCostCenterId'
   | 'email'
+  | 'externalId'
   | 'firstName'
   | 'id'
   | 'language'
@@ -3530,6 +4023,32 @@ export type RelationSortFields =
   | 'standardDueDays'
   | 'updated'
   | 'uuid';
+
+export type RelationUpsertFields = {
+  address?: AddressUpsertFields | null | undefined;
+  bankAccounts?: Array<RelationBankAccountUpsertFields> | null | undefined;
+  email?: string | null | undefined;
+  firstName?: string | null | undefined;
+  kind?: RelationKindInput | null | undefined;
+  language?: string | null | undefined;
+  lastName?: string | null | undefined;
+  legalName?: string | null | undefined;
+  registrationCountry?: Country | null | undefined;
+  registrationNumber?: string | null | undefined;
+  remindersAutomaticDisabled?: boolean | null | undefined;
+  standardDueDays?: number | null | undefined;
+  tags?: Array<string> | null | undefined;
+  vatNumber?: string | null | undefined;
+};
+
+export type ReportCompare =
+  | 'none'
+  | 'previous_period'
+  | 'previous_year';
+
+export type ReportFormat =
+  | 'PDF'
+  | 'XLSX';
 
 export type SalesInvoiceEventType =
   | 'email'
@@ -3567,6 +4086,7 @@ export type SalesInvoiceFilter = {
   email?: StringFieldComparison | null | undefined;
   entryId?: StringFieldComparison | null | undefined;
   events?: SalesInvoiceFilterSalesInvoiceEventFilter | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   footer?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
@@ -3725,6 +4245,7 @@ export type SalesInvoiceFilterQuoteFilter = {
   email?: StringFieldComparison | null | undefined;
   entryId?: StringFieldComparison | null | undefined;
   expiration?: DateFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   footer?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
@@ -3779,6 +4300,7 @@ export type SalesInvoiceFilterRelationFilter = {
   createdById?: StringFieldComparison | null | undefined;
   defaultCostCenterId?: StringFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   language?: StringFieldComparison | null | undefined;
@@ -3843,6 +4365,7 @@ export type SalesInvoiceFilterSalesInvoiceFilter = {
   due?: DateFieldComparison | null | undefined;
   email?: StringFieldComparison | null | undefined;
   entryId?: StringFieldComparison | null | undefined;
+  externalId?: StringFieldComparison | null | undefined;
   firstName?: StringFieldComparison | null | undefined;
   footer?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
@@ -3876,6 +4399,21 @@ export type SalesInvoiceFilterSalesInvoiceNoteFilter = {
   updated?: DateFieldComparison | null | undefined;
 };
 
+export type SalesInvoiceLineUpsertFields = {
+  description?: string | null | undefined;
+  /** Discount per unit, minor units. */
+  discountMinor?: number | null | undefined;
+  name: string;
+  /** Unit price in minor units (cents). */
+  priceMinor: number;
+  product?: ObjectRef | null | undefined;
+  project?: ObjectRef | null | undefined;
+  /** Defaults to 1. */
+  quantity?: number | null | undefined;
+  /** The tax amount is derived from the tax code, never taken from the line. */
+  taxCode: string;
+};
+
 export type SalesInvoicePeriodInput = {
   from?: string | null | undefined;
   to?: string | null | undefined;
@@ -3897,6 +4435,7 @@ export type SalesInvoiceSortFields =
   | 'due'
   | 'email'
   | 'entryId'
+  | 'externalId'
   | 'firstName'
   | 'footer'
   | 'id'
@@ -3916,6 +4455,29 @@ export type SalesInvoiceSortFields =
   | 'uuid'
   | 'vatNumber'
   | 'vatReliefClaimedAt';
+
+export type SalesInvoiceUpsertFields = {
+  address?: AddressUpsertFields | null | undefined;
+  currency: Currency;
+  /** ISO date, 2026-10-17. */
+  date: string;
+  /** ISO date. */
+  due?: string | null | undefined;
+  email?: string | null | undefined;
+  /** Gross total you expect (minor units). The call fails with TOTAL_MISMATCH when the lines add up differently. */
+  expectedTotalMinor?: number | null | undefined;
+  /** Number, date and book the invoice now. Without it the invoice stays a draft. */
+  finalise?: boolean | null | undefined;
+  firstName?: string | null | undefined;
+  footer?: string | null | undefined;
+  lastName?: string | null | undefined;
+  legalName?: string | null | undefined;
+  lines: Array<SalesInvoiceLineUpsertFields>;
+  memo?: string | null | undefined;
+  reference?: string | null | undefined;
+  relation?: ObjectRef | null | undefined;
+  vatNumber?: string | null | undefined;
+};
 
 export type SetPlatformFeatureLimitInput = {
   /** Default: true. false is only valid with profileId (show a key the platform default hides). */
@@ -4228,6 +4790,33 @@ export type UpdateCostCenterDto = {
   profileId?: string | null | undefined;
 };
 
+export type UpdateDataSourceInput = {
+  autoAttach?: boolean | null | undefined;
+  balanceAssertions?: boolean | null | undefined;
+  cadence?: DataSourceCadence | null | undefined;
+  delivery?: Record<string, unknown> | null | undefined;
+  expectedBy?: string | null | undefined;
+  gapThresholdMinutes?: number | null | undefined;
+  historyMonths?: number | null | undefined;
+  name?: string | null | undefined;
+  settings?: Record<string, unknown> | null | undefined;
+  status?: string | null | undefined;
+};
+
+export type UpdateExportScheduleInput = {
+  companyIds?: Array<string | number> | null | undefined;
+  companyScope?: string | null | undefined;
+  compression?: string | null | undefined;
+  cron?: string | null | undefined;
+  datasets?: Array<string> | null | undefined;
+  destinationKey?: string | null | undefined;
+  format?: string | null | undefined;
+  pathTemplate?: string | null | undefined;
+  /** active or paused. */
+  status?: string | null | undefined;
+  timezone?: string | null | undefined;
+};
+
 export type UpdateMonetaryAccountDto = {
   active?: boolean | null | undefined;
   bic?: string | null | undefined;
@@ -4308,6 +4897,15 @@ export type UpdatePlatformCompanyInput = {
   name?: string | null | undefined;
   platformId?: string | number | null | undefined;
   profileId: string | number;
+};
+
+export type UpdatePlatformWebhookEndpointInput = {
+  description?: string | null | undefined;
+  /** Enabling resets the failure count. */
+  enabled?: boolean | null | undefined;
+  eventTypes?: Array<string> | null | undefined;
+  failoverUrl?: string | null | undefined;
+  url?: string | null | undefined;
 };
 
 export type UpdateProfileDto = {
@@ -4482,6 +5080,62 @@ export type UpdateSalesInvoiceDto = {
   vatNumber?: string | null | undefined;
 };
 
+export type UpsertCostCenterInput = {
+  company: CompanyRef;
+  costCenter: CostCenterUpsertFields;
+  /** Your id for this object. Unique per company and object type; the match key of the upsert. */
+  externalId: string;
+  /** String key/values to attach (max 50 keys, 500 characters each). Merge patch: `null` removes a key, `{}` clears all. */
+  metadata?: Record<string, unknown> | null | undefined;
+  /** Bring an object back that was deleted earlier. Audited. */
+  restore?: boolean | null | undefined;
+};
+
+export type UpsertCustomRecordInput = {
+  /** CompanyRef: { id } or { externalId }. */
+  company: Record<string, unknown>;
+  data: Record<string, unknown>;
+  externalId: string;
+  metadata?: Record<string, unknown> | null | undefined;
+  occurredAt?: string | null | undefined;
+  /** Left out: the type's initial state for a new record, unchanged for an existing one. */
+  status?: string | null | undefined;
+  type: string;
+};
+
+export type UpsertEmployeeInput = {
+  company: CompanyRef;
+  employee: EmployeeUpsertFields;
+  /** Your id for this object. Unique per company and object type; the match key of the upsert. */
+  externalId: string;
+  /** String key/values to attach (max 50 keys, 500 characters each). Merge patch: `null` removes a key, `{}` clears all. */
+  metadata?: Record<string, unknown> | null | undefined;
+  /** Bring an object back that was deleted earlier. Audited. */
+  restore?: boolean | null | undefined;
+};
+
+export type UpsertEmploymentInput = {
+  company: CompanyRef;
+  employment: EmploymentUpsertFields;
+  /** Your id for this object. Unique per company and object type; the match key of the upsert. */
+  externalId: string;
+  /** String key/values to attach (max 50 keys, 500 characters each). Merge patch: `null` removes a key, `{}` clears all. */
+  metadata?: Record<string, unknown> | null | undefined;
+  /** Bring an object back that was deleted earlier. Audited. */
+  restore?: boolean | null | undefined;
+};
+
+export type UpsertJournalEntryInput = {
+  company: CompanyRef;
+  /** Your id for this object. Unique per company and object type; the match key of the upsert. */
+  externalId: string;
+  journalEntry: JournalEntryUpsertFields;
+  /** String key/values to attach (max 50 keys, 500 characters each). Merge patch: `null` removes a key, `{}` clears all. */
+  metadata?: Record<string, unknown> | null | undefined;
+  /** Bring an object back that was deleted earlier. Audited. */
+  restore?: boolean | null | undefined;
+};
+
 export type UpsertPlatformUserInput = {
   /** true disables the user (their tokens stop working); false re-enables. */
   disabled?: boolean | null | undefined;
@@ -4491,6 +5145,68 @@ export type UpsertPlatformUserInput = {
   lastName?: string | null | undefined;
   platformId?: string | number | null | undefined;
 };
+
+export type UpsertProductInput = {
+  company: CompanyRef;
+  /** Your id for this object. Unique per company and object type; the match key of the upsert. */
+  externalId: string;
+  /** String key/values to attach (max 50 keys, 500 characters each). Merge patch: `null` removes a key, `{}` clears all. */
+  metadata?: Record<string, unknown> | null | undefined;
+  product: ProductUpsertFields;
+  /** Bring an object back that was deleted earlier. Audited. */
+  restore?: boolean | null | undefined;
+};
+
+export type UpsertProjectInput = {
+  company: CompanyRef;
+  /** Your id for this object. Unique per company and object type; the match key of the upsert. */
+  externalId: string;
+  /** String key/values to attach (max 50 keys, 500 characters each). Merge patch: `null` removes a key, `{}` clears all. */
+  metadata?: Record<string, unknown> | null | undefined;
+  project: ProjectUpsertFields;
+  /** Bring an object back that was deleted earlier. Audited. */
+  restore?: boolean | null | undefined;
+};
+
+export type UpsertPurchaseInvoiceInput = {
+  company: CompanyRef;
+  /** Your id for this object. Unique per company and object type; the match key of the upsert. */
+  externalId: string;
+  /** String key/values to attach (max 50 keys, 500 characters each). Merge patch: `null` removes a key, `{}` clears all. */
+  metadata?: Record<string, unknown> | null | undefined;
+  purchaseInvoice: PurchaseInvoiceUpsertFields;
+  /** Bring an object back that was deleted earlier. Audited. */
+  restore?: boolean | null | undefined;
+};
+
+export type UpsertRelationInput = {
+  company: CompanyRef;
+  /** Your id for this object. Unique per company and object type; the match key of the upsert. */
+  externalId: string;
+  /** String key/values to attach (max 50 keys, 500 characters each). Merge patch: `null` removes a key, `{}` clears all. */
+  metadata?: Record<string, unknown> | null | undefined;
+  relation: RelationUpsertFields;
+  /** Bring an object back that was deleted earlier. Audited. */
+  restore?: boolean | null | undefined;
+};
+
+export type UpsertSalesInvoiceInput = {
+  company: CompanyRef;
+  /** Your id for this object. Unique per company and object type; the match key of the upsert. */
+  externalId: string;
+  /** String key/values to attach (max 50 keys, 500 characters each). Merge patch: `null` removes a key, `{}` clears all. */
+  metadata?: Record<string, unknown> | null | undefined;
+  /** Bring an object back that was deleted earlier. Audited. */
+  restore?: boolean | null | undefined;
+  salesInvoice: SalesInvoiceUpsertFields;
+};
+
+/** `unchanged`: the same data was already stored, nothing was written. `deleted`: the object was deleted earlier and stays deleted unless the call has `restore: true`. */
+export type UpsertStatus =
+  | 'created'
+  | 'deleted'
+  | 'unchanged'
+  | 'updated';
 
 export type UsTaxClassification =
   | 'c_corporation'
@@ -4504,6 +5220,20 @@ export type UsTaxClassification =
   | 'single_member_llc'
   | 'sole_proprietor'
   | 'trust_estate';
+
+export type WorkedHoursFeedInput = {
+  breakMinutes?: number | null | undefined;
+  /** ObjectRef of the employment: { id } or { externalId }. */
+  employment: Record<string, unknown>;
+  endAt: string;
+  externalId: string;
+  hourType?: string | null | undefined;
+  metadata?: Record<string, unknown> | null | undefined;
+  note?: string | null | undefined;
+  startAt: string;
+  status?: string | null | undefined;
+  workDate: string;
+};
 
 export type SdkProfileApiCredentialsQueryVariables = Exact<{
   profileId: string | number;
@@ -4706,6 +5436,575 @@ export type SdkDeleteCostCenterMutationVariables = Exact<{
 
 
 export type SdkDeleteCostCenterMutation = { deleteOneCostCenter: { id: string | null } };
+
+export type SdkUpsertFieldsFragment = { status: UpsertStatus, id: string, externalId: string };
+
+export type SdkUpsertRelationMutationVariables = Exact<{
+  input: UpsertRelationInput;
+}>;
+
+
+export type SdkUpsertRelationMutation = { upsertRelation: { status: UpsertStatus, id: string, externalId: string } };
+
+export type SdkUpsertProductMutationVariables = Exact<{
+  input: UpsertProductInput;
+}>;
+
+
+export type SdkUpsertProductMutation = { upsertProduct: { status: UpsertStatus, id: string, externalId: string } };
+
+export type SdkUpsertProjectMutationVariables = Exact<{
+  input: UpsertProjectInput;
+}>;
+
+
+export type SdkUpsertProjectMutation = { upsertProject: { status: UpsertStatus, id: string, externalId: string } };
+
+export type SdkUpsertCostCenterMutationVariables = Exact<{
+  input: UpsertCostCenterInput;
+}>;
+
+
+export type SdkUpsertCostCenterMutation = { upsertCostCenter: { status: UpsertStatus, id: string, externalId: string } };
+
+export type SdkUpsertSalesInvoiceMutationVariables = Exact<{
+  input: UpsertSalesInvoiceInput;
+}>;
+
+
+export type SdkUpsertSalesInvoiceMutation = { upsertSalesInvoice: { status: UpsertStatus, id: string, externalId: string } };
+
+export type SdkUpsertPurchaseInvoiceMutationVariables = Exact<{
+  input: UpsertPurchaseInvoiceInput;
+}>;
+
+
+export type SdkUpsertPurchaseInvoiceMutation = { upsertPurchaseInvoice: { status: UpsertStatus, id: string, externalId: string } };
+
+export type SdkUpsertJournalEntryMutationVariables = Exact<{
+  input: UpsertJournalEntryInput;
+}>;
+
+
+export type SdkUpsertJournalEntryMutation = { upsertJournalEntry: { status: UpsertStatus, id: string, externalId: string } };
+
+export type SdkUpsertEmployeeMutationVariables = Exact<{
+  input: UpsertEmployeeInput;
+}>;
+
+
+export type SdkUpsertEmployeeMutation = { upsertEmployee: { status: UpsertStatus, id: string, externalId: string } };
+
+export type SdkUpsertEmploymentMutationVariables = Exact<{
+  input: UpsertEmploymentInput;
+}>;
+
+
+export type SdkUpsertEmploymentMutation = { upsertEmployment: { status: UpsertStatus, id: string, externalId: string } };
+
+export type SdkSetObjectMetadataMutationVariables = Exact<{
+  type: PlatformObjectType;
+  id: string | number;
+  metadata: Record<string, unknown>;
+}>;
+
+
+export type SdkSetObjectMetadataMutation = { setObjectMetadata: boolean };
+
+export type SdkPlatformObjectByExternalIdQueryVariables = Exact<{
+  company: CompanyRef;
+  type: PlatformObjectType;
+  externalId: string;
+}>;
+
+
+export type SdkPlatformObjectByExternalIdQuery = { platformObjectByExternalId: { type: PlatformObjectType, id: string, externalId: string, deleted: boolean } | null };
+
+export type SdkBulkJobFieldsFragment = { id: string, objectType: string, mode: string, status: PlatformBulkJobStatus, lineCount: number, processedCount: number, createdCount: number, updatedCount: number, unchangedCount: number, skippedCount: number, failedCount: number, dryRun: boolean, emitEvents: boolean, created: string, startedAt: string | null, finishedAt: string | null, error: string | null };
+
+export type SdkPlatformBulkJobQueryVariables = Exact<{
+  id: string | number;
+  first?: number;
+  after?: string | null | undefined;
+  status?: Array<string> | string | null | undefined;
+}>;
+
+
+export type SdkPlatformBulkJobQuery = { platformBulkJob: { id: string, objectType: string, mode: string, status: PlatformBulkJobStatus, lineCount: number, processedCount: number, createdCount: number, updatedCount: number, unchangedCount: number, skippedCount: number, failedCount: number, dryRun: boolean, emitEvents: boolean, created: string, startedAt: string | null, finishedAt: string | null, error: string | null, results: { endCursor: string | null, hasNextPage: boolean, nodes: Array<{ line: number, status: string, companyId: string | null, objectId: string | null, externalId: string | null, error: { code: string, message: string, path: string | null } | null }> } } | null };
+
+export type SdkPlatformBulkJobsQueryVariables = Exact<{
+  first?: number;
+  after?: string | null | undefined;
+  status?: Array<PlatformBulkJobStatus> | PlatformBulkJobStatus | null | undefined;
+}>;
+
+
+export type SdkPlatformBulkJobsQuery = { platformBulkJobs: { endCursor: string | null, hasNextPage: boolean, nodes: Array<{ id: string, objectType: string, mode: string, status: PlatformBulkJobStatus, lineCount: number, processedCount: number, createdCount: number, updatedCount: number, unchangedCount: number, skippedCount: number, failedCount: number, dryRun: boolean, emitEvents: boolean, created: string, startedAt: string | null, finishedAt: string | null, error: string | null }> } };
+
+export type SdkCancelPlatformBulkJobMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type SdkCancelPlatformBulkJobMutation = { cancelPlatformBulkJob: { id: string, objectType: string, mode: string, status: PlatformBulkJobStatus, lineCount: number, processedCount: number, createdCount: number, updatedCount: number, unchangedCount: number, skippedCount: number, failedCount: number, dryRun: boolean, emitEvents: boolean, created: string, startedAt: string | null, finishedAt: string | null, error: string | null } };
+
+export type SdkWebhookEndpointFieldsFragment = { id: string, url: string, failoverUrl: string | null, description: string | null, eventTypes: Array<string>, enabled: boolean, disabledReason: string | null, apiVersion: string, consecutiveFailures: number, lastSuccessAt: string | null, lastFailureAt: string | null, rotationEndsAt: string | null, created: string };
+
+export type SdkWebhookDeliveryFieldsFragment = { id: string, endpointId: string, eventType: string, eventId: string, companyId: string | null, status: string, attemptCount: number, replayCount: number, nextAttemptAt: string | null, lastAttemptAt: string | null, deliveredVia: string | null, responseStatus: number | null, durationMs: number | null, responseExcerpt: string | null, error: string | null, created: string };
+
+export type SdkPlatformEventCatalogQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkPlatformEventCatalogQuery = { platformEventCatalog: Array<{ type: string, objectType: string | null, module: string | null, description: string, status: PlatformEventTypeStatus, wave: string | null }> };
+
+export type SdkPlatformEventsQueryVariables = Exact<{
+  filter?: PlatformEventFilter | null | undefined;
+  after?: string | null | undefined;
+  first?: number;
+}>;
+
+
+export type SdkPlatformEventsQuery = { platformEvents: { endCursor: string | null, hasNextPage: boolean, nodes: Array<{ id: string, type: string, apiVersion: string, sequence: string, created: string, occurredAt: string, objectType: string | null, objectId: string | null, data: Record<string, unknown>, requestId: string | null, company: { id: string, externalId: string | null } | null }> } };
+
+export type SdkPlatformEventQueryVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type SdkPlatformEventQuery = { platformEvent: { id: string, type: string, apiVersion: string, sequence: string, created: string, occurredAt: string, objectType: string | null, objectId: string | null, data: Record<string, unknown>, requestId: string | null, company: { id: string, externalId: string | null } | null } | null };
+
+export type SdkPlatformWebhookEndpointsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkPlatformWebhookEndpointsQuery = { platformWebhookEndpoints: Array<{ id: string, url: string, failoverUrl: string | null, description: string | null, eventTypes: Array<string>, enabled: boolean, disabledReason: string | null, apiVersion: string, consecutiveFailures: number, lastSuccessAt: string | null, lastFailureAt: string | null, rotationEndsAt: string | null, created: string }> };
+
+export type SdkPlatformWebhookDeliveriesQueryVariables = Exact<{
+  endpointId: string | number;
+  filter?: PlatformDeliveryFilter | null | undefined;
+  after?: string | null | undefined;
+  first?: number;
+}>;
+
+
+export type SdkPlatformWebhookDeliveriesQuery = { platformWebhookDeliveries: { endCursor: string | null, hasNextPage: boolean, nodes: Array<{ id: string, endpointId: string, eventType: string, eventId: string, companyId: string | null, status: string, attemptCount: number, replayCount: number, nextAttemptAt: string | null, lastAttemptAt: string | null, deliveredVia: string | null, responseStatus: number | null, durationMs: number | null, responseExcerpt: string | null, error: string | null, created: string }> } };
+
+export type SdkCreatePlatformWebhookEndpointMutationVariables = Exact<{
+  input: CreatePlatformWebhookEndpointInput;
+}>;
+
+
+export type SdkCreatePlatformWebhookEndpointMutation = { createPlatformWebhookEndpoint: { signingSecret: string, endpoint: { id: string, url: string, failoverUrl: string | null, description: string | null, eventTypes: Array<string>, enabled: boolean, disabledReason: string | null, apiVersion: string, consecutiveFailures: number, lastSuccessAt: string | null, lastFailureAt: string | null, rotationEndsAt: string | null, created: string } } };
+
+export type SdkUpdatePlatformWebhookEndpointMutationVariables = Exact<{
+  id: string | number;
+  input: UpdatePlatformWebhookEndpointInput;
+}>;
+
+
+export type SdkUpdatePlatformWebhookEndpointMutation = { updatePlatformWebhookEndpoint: { id: string, url: string, failoverUrl: string | null, description: string | null, eventTypes: Array<string>, enabled: boolean, disabledReason: string | null, apiVersion: string, consecutiveFailures: number, lastSuccessAt: string | null, lastFailureAt: string | null, rotationEndsAt: string | null, created: string } };
+
+export type SdkRotatePlatformWebhookSecretMutationVariables = Exact<{
+  id: string | number;
+  keepPreviousHours?: number;
+}>;
+
+
+export type SdkRotatePlatformWebhookSecretMutation = { rotatePlatformWebhookSecret: { signingSecret: string, endpoint: { id: string, url: string, failoverUrl: string | null, description: string | null, eventTypes: Array<string>, enabled: boolean, disabledReason: string | null, apiVersion: string, consecutiveFailures: number, lastSuccessAt: string | null, lastFailureAt: string | null, rotationEndsAt: string | null, created: string } } };
+
+export type SdkDeletePlatformWebhookEndpointMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type SdkDeletePlatformWebhookEndpointMutation = { deletePlatformWebhookEndpoint: boolean };
+
+export type SdkPingPlatformWebhookEndpointMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type SdkPingPlatformWebhookEndpointMutation = { pingPlatformWebhookEndpoint: { id: string, endpointId: string, eventType: string, eventId: string, companyId: string | null, status: string, attemptCount: number, replayCount: number, nextAttemptAt: string | null, lastAttemptAt: string | null, deliveredVia: string | null, responseStatus: number | null, durationMs: number | null, responseExcerpt: string | null, error: string | null, created: string } };
+
+export type SdkReplayPlatformWebhookDeliveryMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type SdkReplayPlatformWebhookDeliveryMutation = { replayPlatformWebhookDelivery: { id: string, endpointId: string, eventType: string, eventId: string, companyId: string | null, status: string, attemptCount: number, replayCount: number, nextAttemptAt: string | null, lastAttemptAt: string | null, deliveredVia: string | null, responseStatus: number | null, durationMs: number | null, responseExcerpt: string | null, error: string | null, created: string } };
+
+export type SdkReplayPlatformWebhookDeliveriesMutationVariables = Exact<{
+  endpointId: string | number;
+  filter: PlatformDeliveryFilter;
+}>;
+
+
+export type SdkReplayPlatformWebhookDeliveriesMutation = { replayPlatformWebhookDeliveries: { id: string, matched: number, enqueued: number, status: string } };
+
+export type SdkResendPlatformEventMutationVariables = Exact<{
+  eventId: string | number;
+  endpointId: string | number;
+}>;
+
+
+export type SdkResendPlatformEventMutation = { resendPlatformEvent: { id: string, endpointId: string, eventType: string, eventId: string, companyId: string | null, status: string, attemptCount: number, replayCount: number, nextAttemptAt: string | null, lastAttemptAt: string | null, deliveredVia: string | null, responseStatus: number | null, durationMs: number | null, responseExcerpt: string | null, error: string | null, created: string } };
+
+export type SdkDataSourceFieldsFragment = { id: string, key: string, type: DataSourceType, name: string, status: string, cadence: DataSourceCadence, expectedBy: string | null, gapThresholdMinutes: number, historyMonths: number, balanceAssertions: boolean, delivery: Record<string, unknown>, settings: Record<string, unknown>, autoAttach: boolean };
+
+export type SdkFeedAccountFieldsFragment = { id: string, externalId: string, iban: string | null, name: string, health: FeedHealthStatus, statusSince: string, lastDeliveryAt: string | null, completeThrough: string | null, detail: Record<string, unknown> | null, lastBalance: { date: string, type: string, amountMinor: number, currency: Currency, computedMinor: number | null, differenceMinor: number | null, status: string } | null };
+
+export type SdkDataSourcesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkDataSourcesQuery = { dataSources: Array<{ id: string, key: string, type: DataSourceType, name: string, status: string, cadence: DataSourceCadence, expectedBy: string | null, gapThresholdMinutes: number, historyMonths: number, balanceAssertions: boolean, delivery: Record<string, unknown>, settings: Record<string, unknown>, autoAttach: boolean }> };
+
+export type SdkDataSourceQueryVariables = Exact<{
+  key: string;
+}>;
+
+
+export type SdkDataSourceQuery = { dataSource: { id: string, key: string, type: DataSourceType, name: string, status: string, cadence: DataSourceCadence, expectedBy: string | null, gapThresholdMinutes: number, historyMonths: number, balanceAssertions: boolean, delivery: Record<string, unknown>, settings: Record<string, unknown>, autoAttach: boolean } | null };
+
+export type SdkFeedHealthQueryVariables = Exact<{
+  status?: Array<FeedHealthStatus> | FeedHealthStatus | null | undefined;
+  first?: number;
+  after?: string | null | undefined;
+}>;
+
+
+export type SdkFeedHealthQuery = { feedHealth: { nextCursor: string | null, nodes: Array<{ id: string, externalId: string, iban: string | null, name: string, health: FeedHealthStatus, statusSince: string, lastDeliveryAt: string | null, completeThrough: string | null, detail: Record<string, unknown> | null, lastBalance: { date: string, type: string, amountMinor: number, currency: Currency, computedMinor: number | null, differenceMinor: number | null, status: string } | null }> } };
+
+export type SdkDataSourceFilesQueryVariables = Exact<{
+  key: string;
+  first?: number;
+  after?: string | null | undefined;
+}>;
+
+
+export type SdkDataSourceFilesQuery = { dataSourceFiles: { nextCursor: string | null, nodes: Array<{ id: string, format: string, receivedVia: string, filename: string | null, sha256: string, size: number, status: string, statements: number | null, entries: number | null, imported: number | null, duplicates: number | null, unroutedAccounts: Array<string> | null, error: string | null, created: string }> } };
+
+export type SdkRegisterDataSourceMutationVariables = Exact<{
+  input: RegisterDataSourceInput;
+}>;
+
+
+export type SdkRegisterDataSourceMutation = { registerDataSource: { id: string, key: string, type: DataSourceType, name: string, status: string, cadence: DataSourceCadence, expectedBy: string | null, gapThresholdMinutes: number, historyMonths: number, balanceAssertions: boolean, delivery: Record<string, unknown>, settings: Record<string, unknown>, autoAttach: boolean } };
+
+export type SdkUpdateDataSourceMutationVariables = Exact<{
+  key: string;
+  input: UpdateDataSourceInput;
+}>;
+
+
+export type SdkUpdateDataSourceMutation = { updateDataSource: { id: string, key: string, type: DataSourceType, name: string, status: string, cadence: DataSourceCadence, expectedBy: string | null, gapThresholdMinutes: number, historyMonths: number, balanceAssertions: boolean, delivery: Record<string, unknown>, settings: Record<string, unknown>, autoAttach: boolean } };
+
+export type SdkRetireDataSourceMutationVariables = Exact<{
+  key: string;
+}>;
+
+
+export type SdkRetireDataSourceMutation = { retireDataSource: { id: string, key: string, type: DataSourceType, name: string, status: string, cadence: DataSourceCadence, expectedBy: string | null, gapThresholdMinutes: number, historyMonths: number, balanceAssertions: boolean, delivery: Record<string, unknown>, settings: Record<string, unknown>, autoAttach: boolean } };
+
+export type SdkAttachmentFieldsFragment = { id: string, sourceKey: string, companyId: string, companyExternalId: string | null, status: string, attachedAt: string, backfillFrom: string | null, backfillStatus: string, lastDeliveryAt: string | null };
+
+export type SdkAttachDataSourceMutationVariables = Exact<{
+  key: string;
+  company: CompanyRef;
+  backfillFrom?: string | null | undefined;
+}>;
+
+
+export type SdkAttachDataSourceMutation = { attachDataSource: { id: string, sourceKey: string, companyId: string, companyExternalId: string | null, status: string, attachedAt: string, backfillFrom: string | null, backfillStatus: string, lastDeliveryAt: string | null } };
+
+export type SdkPauseDataSourceAttachmentMutationVariables = Exact<{
+  key: string;
+  company: CompanyRef;
+}>;
+
+
+export type SdkPauseDataSourceAttachmentMutation = { pauseDataSourceAttachment: { id: string, sourceKey: string, companyId: string, companyExternalId: string | null, status: string, attachedAt: string, backfillFrom: string | null, backfillStatus: string, lastDeliveryAt: string | null } };
+
+export type SdkDetachDataSourceMutationVariables = Exact<{
+  key: string;
+  company: CompanyRef;
+}>;
+
+
+export type SdkDetachDataSourceMutation = { detachDataSource: { id: string, sourceKey: string, companyId: string, companyExternalId: string | null, status: string, attachedAt: string, backfillFrom: string | null, backfillStatus: string, lastDeliveryAt: string | null } };
+
+export type SdkUpsertFeedBankAccountMutationVariables = Exact<{
+  source: string;
+  company: CompanyRef;
+  account: BankAccountFeedInput;
+}>;
+
+
+export type SdkUpsertFeedBankAccountMutation = { upsertFeedBankAccount: { id: string, externalId: string, iban: string | null, name: string, health: FeedHealthStatus, statusSince: string, lastDeliveryAt: string | null, completeThrough: string | null, detail: Record<string, unknown> | null, lastBalance: { date: string, type: string, amountMinor: number, currency: Currency, computedMinor: number | null, differenceMinor: number | null, status: string } | null } };
+
+export type SdkIngestBankTransactionsMutationVariables = Exact<{
+  source: string;
+  company: CompanyRef;
+  account: string;
+  transactions: Array<BankTransactionFeedInput> | BankTransactionFeedInput;
+}>;
+
+
+export type SdkIngestBankTransactionsMutation = { ingestBankTransactions: Array<{ line: number, status: string, id: string | null, externalId: string | null, error: { code: string, message: string, path: string | null } | null }> };
+
+export type SdkReportBankBalancesMutationVariables = Exact<{
+  source: string;
+  company: CompanyRef;
+  account: string;
+  balances: Array<BankBalanceInput> | BankBalanceInput;
+}>;
+
+
+export type SdkReportBankBalancesMutation = { reportBankBalances: Array<{ date: string, type: string, amountMinor: number, currency: Currency, computedMinor: number | null, differenceMinor: number | null, status: string }> };
+
+export type SdkReportFeedWatermarkMutationVariables = Exact<{
+  source: string;
+  company: CompanyRef;
+  account?: string | null | undefined;
+  completeThrough: string;
+}>;
+
+
+export type SdkReportFeedWatermarkMutation = { reportFeedWatermark: boolean };
+
+export type SdkIngestWorkedHoursMutationVariables = Exact<{
+  source: string;
+  company: CompanyRef;
+  entries: Array<WorkedHoursFeedInput> | WorkedHoursFeedInput;
+}>;
+
+
+export type SdkIngestWorkedHoursMutation = { ingestWorkedHours: Array<{ line: number, status: string, id: string | null, externalId: string | null, error: { code: string, message: string, path: string | null } | null }> };
+
+export type SdkBankTransactionBookingsQueryVariables = Exact<{
+  company: CompanyRef;
+  externalIds: Array<string> | string;
+}>;
+
+
+export type SdkBankTransactionBookingsQuery = { bankTransactionBookings: Array<{ externalId: string, transactionId: string | null, booking: { status: PaymentBookingStatus, taxCode: string | null, vatAmountMinor: number | null, bookedAt: string | null, bookedBy: BookingActorKind | null, reviewReason: string | null, counterpart: { type: string, id: string | null, externalId: string | null, label: string } | null, ledger: { code: string, name: string } | null, legs: Array<{ ledgerCode: string, ledgerName: string, debitMinor: number, creditMinor: number }>, category: { key: string, label: string } | null, receipt: { status: ReceiptStatus, documentIds: Array<string>, requestedAt: string | null } } | null }> };
+
+export type SdkRecordTypeFieldsFragment = { id: string, key: string, version: number, name: string, schema: Record<string, unknown>, states: Array<string>, initialState: string, transitions: Record<string, unknown> | null, displayTemplate: string, deepLinkTemplate: string | null, status: string };
+
+export type SdkCustomRecordFieldsFragment = { id: string, type: string, externalId: string, status: string, data: Record<string, unknown>, metadata: Record<string, unknown> | null, revision: number, occurredAt: string | null, displayName: string, created: string, updated: string, effects: Array<{ stepId: string, objectType: PlatformObjectType, objectId: string, reversed: boolean, flowRunId: string }>, runs: Array<{ id: string, templateKey: string, trigger: string, status: string, error: Record<string, unknown> | null }> };
+
+export type SdkFlowTemplateFieldsFragment = { id: string, key: string, version: number, recordType: string, status: string, sourceFormat: string, source: string, checksum: string, activatedAt: string | null };
+
+export type SdkFlowRunFieldsFragment = { id: string, templateKey: string, templateVersion: number, recordId: string, trigger: string, recordRevision: number, status: string, attempts: number, error: Record<string, unknown> | null, outputs: Record<string, unknown> | null, startedAt: string | null, finishedAt: string | null };
+
+export type SdkPlatformRecordTypesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkPlatformRecordTypesQuery = { platformRecordTypes: Array<{ id: string, key: string, version: number, name: string, schema: Record<string, unknown>, states: Array<string>, initialState: string, transitions: Record<string, unknown> | null, displayTemplate: string, deepLinkTemplate: string | null, status: string }> };
+
+export type SdkDefinePlatformRecordTypeMutationVariables = Exact<{
+  input: DefineRecordTypeInput;
+}>;
+
+
+export type SdkDefinePlatformRecordTypeMutation = { definePlatformRecordType: { id: string, key: string, version: number, name: string, schema: Record<string, unknown>, states: Array<string>, initialState: string, transitions: Record<string, unknown> | null, displayTemplate: string, deepLinkTemplate: string | null, status: string } };
+
+export type SdkUpsertCustomRecordMutationVariables = Exact<{
+  input: UpsertCustomRecordInput;
+}>;
+
+
+export type SdkUpsertCustomRecordMutation = { upsertCustomRecord: { status: UpsertStatus, record: { id: string, type: string, externalId: string, status: string, data: Record<string, unknown>, metadata: Record<string, unknown> | null, revision: number, occurredAt: string | null, displayName: string, created: string, updated: string, effects: Array<{ stepId: string, objectType: PlatformObjectType, objectId: string, reversed: boolean, flowRunId: string }>, runs: Array<{ id: string, templateKey: string, trigger: string, status: string, error: Record<string, unknown> | null }> } } };
+
+export type SdkDeleteCustomRecordMutationVariables = Exact<{
+  company: CompanyRef;
+  type: string;
+  externalId: string;
+}>;
+
+
+export type SdkDeleteCustomRecordMutation = { deleteCustomRecord: boolean };
+
+export type SdkCustomRecordQueryVariables = Exact<{
+  company: CompanyRef;
+  type: string;
+  externalId: string;
+}>;
+
+
+export type SdkCustomRecordQuery = { customRecord: { id: string, type: string, externalId: string, status: string, data: Record<string, unknown>, metadata: Record<string, unknown> | null, revision: number, occurredAt: string | null, displayName: string, created: string, updated: string, effects: Array<{ stepId: string, objectType: PlatformObjectType, objectId: string, reversed: boolean, flowRunId: string }>, runs: Array<{ id: string, templateKey: string, trigger: string, status: string, error: Record<string, unknown> | null }> } | null };
+
+export type SdkCustomRecordsQueryVariables = Exact<{
+  company: CompanyRef;
+  type: string;
+  status?: Array<string> | string | null | undefined;
+  first?: number;
+  after?: string | null | undefined;
+}>;
+
+
+export type SdkCustomRecordsQuery = { customRecords: { nextCursor: string | null, nodes: Array<{ id: string, type: string, externalId: string, status: string, data: Record<string, unknown>, metadata: Record<string, unknown> | null, revision: number, occurredAt: string | null, displayName: string, created: string, updated: string, effects: Array<{ stepId: string, objectType: PlatformObjectType, objectId: string, reversed: boolean, flowRunId: string }>, runs: Array<{ id: string, templateKey: string, trigger: string, status: string, error: Record<string, unknown> | null }> }> } };
+
+export type SdkFlowTemplatesQueryVariables = Exact<{
+  key?: string | null | undefined;
+}>;
+
+
+export type SdkFlowTemplatesQuery = { flowTemplates: Array<{ id: string, key: string, version: number, recordType: string, status: string, sourceFormat: string, source: string, checksum: string, activatedAt: string | null }> };
+
+export type SdkSaveFlowTemplateMutationVariables = Exact<{
+  source: string;
+  format: FlowTemplateFormat;
+}>;
+
+
+export type SdkSaveFlowTemplateMutation = { saveFlowTemplate: { id: string, key: string, version: number, recordType: string, status: string, sourceFormat: string, source: string, checksum: string, activatedAt: string | null } };
+
+export type SdkActivateFlowTemplateMutationVariables = Exact<{
+  key: string;
+  version: number;
+}>;
+
+
+export type SdkActivateFlowTemplateMutation = { activateFlowTemplate: { id: string, key: string, version: number, recordType: string, status: string, sourceFormat: string, source: string, checksum: string, activatedAt: string | null } };
+
+export type SdkRetireFlowTemplateMutationVariables = Exact<{
+  key: string;
+}>;
+
+
+export type SdkRetireFlowTemplateMutation = { retireFlowTemplate: { id: string, key: string, version: number, recordType: string, status: string, sourceFormat: string, source: string, checksum: string, activatedAt: string | null } };
+
+export type SdkTestFlowTemplateMutationVariables = Exact<{
+  source: string;
+  format: FlowTemplateFormat;
+  records: Array<Record<string, unknown>> | Record<string, unknown>;
+  company?: CompanyRef | null | undefined;
+}>;
+
+
+export type SdkTestFlowTemplateMutation = { testFlowTemplate: { valid: boolean, errors: Array<{ code: string, message: string, path: string | null }>, runs: Array<{ recordExternalId: string, trigger: string | null, error: { code: string, message: string, path: string | null } | null, plannedObjects: Array<{ stepId: string, objectType: string, action: string, externalId: string, summary: Record<string, unknown> }> }> } };
+
+export type SdkFlowRunsQueryVariables = Exact<{
+  status?: Array<string> | string | null | undefined;
+  first?: number;
+  after?: string | null | undefined;
+}>;
+
+
+export type SdkFlowRunsQuery = { flowRuns: { nextCursor: string | null, nodes: Array<{ id: string, templateKey: string, templateVersion: number, recordId: string, trigger: string, recordRevision: number, status: string, attempts: number, error: Record<string, unknown> | null, outputs: Record<string, unknown> | null, startedAt: string | null, finishedAt: string | null }> } };
+
+export type SdkRetryFlowRunMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type SdkRetryFlowRunMutation = { retryFlowRun: { id: string, templateKey: string, templateVersion: number, recordId: string, trigger: string, recordRevision: number, status: string, attempts: number, error: Record<string, unknown> | null, outputs: Record<string, unknown> | null, startedAt: string | null, finishedAt: string | null } };
+
+export type SdkCompanyDocumentFieldsFragment = { id: string, kind: CompanyDocumentKind, filename: string, contentType: string, size: number, sha256: string, created: string, downloadUrl: string, downloadExpiresAt: string };
+
+export type SdkExportRunFieldsFragment = { id: string, kind: string, runDate: string, status: string, files: Record<string, unknown>, rowCounts: Record<string, unknown> | null, error: string | null, startedAt: string | null, finishedAt: string | null, document: { id: string, kind: CompanyDocumentKind, filename: string, contentType: string, size: number, sha256: string, created: string, downloadUrl: string, downloadExpiresAt: string } | null };
+
+export type SdkExportDestinationFieldsFragment = { id: string, key: string, type: string, bucket: string | null, prefix: string, region: string | null, endpoint: string | null, verifiedAt: string | null, credentialsExpireAt: string | null, lastError: string | null };
+
+export type SdkExportScheduleFieldsFragment = { id: string, key: string, datasets: Array<string>, format: string, cron: string, timezone: string, companyScope: string, pathTemplate: string, compression: string, status: string, lastRunAt: string | null, nextRunAt: string | null, destination: { id: string, key: string, type: string, bucket: string | null, prefix: string, region: string | null, endpoint: string | null, verifiedAt: string | null, credentialsExpireAt: string | null, lastError: string | null } };
+
+export type SdkPlatformReportQueryVariables = Exact<{
+  company: CompanyRef;
+  input: PlatformReportInput;
+}>;
+
+
+export type SdkPlatformReportQuery = { platformReport: { type: PlatformReportType, currency: Currency, from: string | null, to: string | null, asOf: string | null, generatedAt: string, data: Record<string, unknown> } };
+
+export type SdkPlatformReportDocumentQueryVariables = Exact<{
+  company: CompanyRef;
+  input: PlatformReportInput;
+  format: ReportFormat;
+}>;
+
+
+export type SdkPlatformReportDocumentQuery = { platformReportDocument: { id: string, kind: CompanyDocumentKind, filename: string, contentType: string, size: number, sha256: string, created: string, downloadUrl: string, downloadExpiresAt: string } };
+
+export type SdkCompanyDocumentQueryVariables = Exact<{
+  company: CompanyRef;
+  kind: CompanyDocumentKind;
+  object?: ObjectRef | null | undefined;
+  params?: Record<string, unknown> | null | undefined;
+}>;
+
+
+export type SdkCompanyDocumentQuery = { companyDocument: { id: string, kind: CompanyDocumentKind, filename: string, contentType: string, size: number, sha256: string, created: string, downloadUrl: string, downloadExpiresAt: string } };
+
+export type SdkRequestXafExportMutationVariables = Exact<{
+  company: CompanyRef;
+  financialYear?: number | null | undefined;
+  from?: string | null | undefined;
+  to?: string | null | undefined;
+}>;
+
+
+export type SdkRequestXafExportMutation = { requestXafExport: { id: string, kind: string, runDate: string, status: string, files: Record<string, unknown>, rowCounts: Record<string, unknown> | null, error: string | null, startedAt: string | null, finishedAt: string | null, document: { id: string, kind: CompanyDocumentKind, filename: string, contentType: string, size: number, sha256: string, created: string, downloadUrl: string, downloadExpiresAt: string } | null } };
+
+export type SdkPlatformExportDestinationsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkPlatformExportDestinationsQuery = { platformExportDestinations: Array<{ id: string, key: string, type: string, bucket: string | null, prefix: string, region: string | null, endpoint: string | null, verifiedAt: string | null, credentialsExpireAt: string | null, lastError: string | null }> };
+
+export type SdkPlatformExportSchedulesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkPlatformExportSchedulesQuery = { platformExportSchedules: Array<{ id: string, key: string, datasets: Array<string>, format: string, cron: string, timezone: string, companyScope: string, pathTemplate: string, compression: string, status: string, lastRunAt: string | null, nextRunAt: string | null, destination: { id: string, key: string, type: string, bucket: string | null, prefix: string, region: string | null, endpoint: string | null, verifiedAt: string | null, credentialsExpireAt: string | null, lastError: string | null } }> };
+
+export type SdkPlatformExportRunQueryVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type SdkPlatformExportRunQuery = { platformExportRun: { id: string, kind: string, runDate: string, status: string, files: Record<string, unknown>, rowCounts: Record<string, unknown> | null, error: string | null, startedAt: string | null, finishedAt: string | null, document: { id: string, kind: CompanyDocumentKind, filename: string, contentType: string, size: number, sha256: string, created: string, downloadUrl: string, downloadExpiresAt: string } | null } | null };
+
+export type SdkCreatePlatformExportDestinationMutationVariables = Exact<{
+  input: CreateExportDestinationInput;
+}>;
+
+
+export type SdkCreatePlatformExportDestinationMutation = { createPlatformExportDestination: { id: string, key: string, type: string, bucket: string | null, prefix: string, region: string | null, endpoint: string | null, verifiedAt: string | null, credentialsExpireAt: string | null, lastError: string | null } };
+
+export type SdkUpdatePlatformExportDestinationCredentialsMutationVariables = Exact<{
+  key: string;
+  credentials: Record<string, unknown>;
+  credentialsExpireAt?: string | null | undefined;
+}>;
+
+
+export type SdkUpdatePlatformExportDestinationCredentialsMutation = { updatePlatformExportDestinationCredentials: { id: string, key: string, type: string, bucket: string | null, prefix: string, region: string | null, endpoint: string | null, verifiedAt: string | null, credentialsExpireAt: string | null, lastError: string | null } };
+
+export type SdkDeletePlatformExportDestinationMutationVariables = Exact<{
+  key: string;
+}>;
+
+
+export type SdkDeletePlatformExportDestinationMutation = { deletePlatformExportDestination: boolean };
+
+export type SdkCreatePlatformExportScheduleMutationVariables = Exact<{
+  input: CreateExportScheduleInput;
+}>;
+
+
+export type SdkCreatePlatformExportScheduleMutation = { createPlatformExportSchedule: { id: string, key: string, datasets: Array<string>, format: string, cron: string, timezone: string, companyScope: string, pathTemplate: string, compression: string, status: string, lastRunAt: string | null, nextRunAt: string | null, destination: { id: string, key: string, type: string, bucket: string | null, prefix: string, region: string | null, endpoint: string | null, verifiedAt: string | null, credentialsExpireAt: string | null, lastError: string | null } } };
+
+export type SdkUpdatePlatformExportScheduleMutationVariables = Exact<{
+  key: string;
+  input: UpdateExportScheduleInput;
+}>;
+
+
+export type SdkUpdatePlatformExportScheduleMutation = { updatePlatformExportSchedule: { id: string, key: string, datasets: Array<string>, format: string, cron: string, timezone: string, companyScope: string, pathTemplate: string, compression: string, status: string, lastRunAt: string | null, nextRunAt: string | null, destination: { id: string, key: string, type: string, bucket: string | null, prefix: string, region: string | null, endpoint: string | null, verifiedAt: string | null, credentialsExpireAt: string | null, lastError: string | null } } };
+
+export type SdkRunPlatformExportNowMutationVariables = Exact<{
+  key: string;
+}>;
+
+
+export type SdkRunPlatformExportNowMutation = { runPlatformExportNow: { id: string, kind: string, runDate: string, status: string, files: Record<string, unknown>, rowCounts: Record<string, unknown> | null, error: string | null, startedAt: string | null, finishedAt: string | null, document: { id: string, kind: CompanyDocumentKind, filename: string, contentType: string, size: number, sha256: string, created: string, downloadUrl: string, downloadExpiresAt: string } | null } };
 
 export type SdkMonetaryAccountsQueryVariables = Exact<{
   first: number;
@@ -5233,6 +6532,21 @@ export type SdkCreditSalesInvoiceMutation = { creditSalesInvoice: { id: string, 
 
 export const SdkTransactionFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkTransactionFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MonetaryAccountPayment"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"monetaryAccountId"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"iban"}},{"kind":"Field","name":{"kind":"Name","value":"processed"}}]}}]} as unknown as DocumentNode<SdkTransactionFieldsFragment, unknown>;
 export const SdkDocumentFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkDocumentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ProcessDocument"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"senderName"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}},{"kind":"Field","name":{"kind":"Name","value":"receivedDate"}},{"kind":"Field","name":{"kind":"Name","value":"processed"}},{"kind":"Field","name":{"kind":"Name","value":"rejected"}},{"kind":"Field","name":{"kind":"Name","value":"rejectedReason"}},{"kind":"Field","name":{"kind":"Name","value":"processing"}},{"kind":"Field","name":{"kind":"Name","value":"purchaseInvoiceId"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkDocumentFieldsFragment, unknown>;
+export const SdkUpsertFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertFieldsFragment, unknown>;
+export const SdkBulkJobFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkBulkJobFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformBulkJob"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"lineCount"}},{"kind":"Field","name":{"kind":"Name","value":"processedCount"}},{"kind":"Field","name":{"kind":"Name","value":"createdCount"}},{"kind":"Field","name":{"kind":"Name","value":"updatedCount"}},{"kind":"Field","name":{"kind":"Name","value":"unchangedCount"}},{"kind":"Field","name":{"kind":"Name","value":"skippedCount"}},{"kind":"Field","name":{"kind":"Name","value":"failedCount"}},{"kind":"Field","name":{"kind":"Name","value":"dryRun"}},{"kind":"Field","name":{"kind":"Name","value":"emitEvents"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]} as unknown as DocumentNode<SdkBulkJobFieldsFragment, unknown>;
+export const SdkWebhookEndpointFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookEndpointFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookEndpoint"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"failoverUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"eventTypes"}},{"kind":"Field","name":{"kind":"Name","value":"enabled"}},{"kind":"Field","name":{"kind":"Name","value":"disabledReason"}},{"kind":"Field","name":{"kind":"Name","value":"apiVersion"}},{"kind":"Field","name":{"kind":"Name","value":"consecutiveFailures"}},{"kind":"Field","name":{"kind":"Name","value":"lastSuccessAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastFailureAt"}},{"kind":"Field","name":{"kind":"Name","value":"rotationEndsAt"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkWebhookEndpointFieldsFragment, unknown>;
+export const SdkWebhookDeliveryFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookDeliveryFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookDelivery"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endpointId"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attemptCount"}},{"kind":"Field","name":{"kind":"Name","value":"replayCount"}},{"kind":"Field","name":{"kind":"Name","value":"nextAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"deliveredVia"}},{"kind":"Field","name":{"kind":"Name","value":"responseStatus"}},{"kind":"Field","name":{"kind":"Name","value":"durationMs"}},{"kind":"Field","name":{"kind":"Name","value":"responseExcerpt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkWebhookDeliveryFieldsFragment, unknown>;
+export const SdkDataSourceFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkDataSourceFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSource"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"cadence"}},{"kind":"Field","name":{"kind":"Name","value":"expectedBy"}},{"kind":"Field","name":{"kind":"Name","value":"gapThresholdMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"historyMonths"}},{"kind":"Field","name":{"kind":"Name","value":"balanceAssertions"}},{"kind":"Field","name":{"kind":"Name","value":"delivery"}},{"kind":"Field","name":{"kind":"Name","value":"settings"}},{"kind":"Field","name":{"kind":"Name","value":"autoAttach"}}]}}]} as unknown as DocumentNode<SdkDataSourceFieldsFragment, unknown>;
+export const SdkFeedAccountFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFeedAccountFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FeedAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"iban"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"health"}},{"kind":"Field","name":{"kind":"Name","value":"statusSince"}},{"kind":"Field","name":{"kind":"Name","value":"lastDeliveryAt"}},{"kind":"Field","name":{"kind":"Name","value":"completeThrough"}},{"kind":"Field","name":{"kind":"Name","value":"detail"}},{"kind":"Field","name":{"kind":"Name","value":"lastBalance"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"amountMinor"}},{"kind":"Field","name":{"kind":"Name","value":"currency"}},{"kind":"Field","name":{"kind":"Name","value":"computedMinor"}},{"kind":"Field","name":{"kind":"Name","value":"differenceMinor"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]} as unknown as DocumentNode<SdkFeedAccountFieldsFragment, unknown>;
+export const SdkAttachmentFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkAttachmentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSourceAttachment"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sourceKey"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"companyExternalId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attachedAt"}},{"kind":"Field","name":{"kind":"Name","value":"backfillFrom"}},{"kind":"Field","name":{"kind":"Name","value":"backfillStatus"}},{"kind":"Field","name":{"kind":"Name","value":"lastDeliveryAt"}}]}}]} as unknown as DocumentNode<SdkAttachmentFieldsFragment, unknown>;
+export const SdkRecordTypeFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkRecordTypeFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformRecordType"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"schema"}},{"kind":"Field","name":{"kind":"Name","value":"states"}},{"kind":"Field","name":{"kind":"Name","value":"initialState"}},{"kind":"Field","name":{"kind":"Name","value":"transitions"}},{"kind":"Field","name":{"kind":"Name","value":"displayTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"deepLinkTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]} as unknown as DocumentNode<SdkRecordTypeFieldsFragment, unknown>;
+export const SdkCustomRecordFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCustomRecordFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CustomRecord"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"data"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"revision"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}},{"kind":"Field","name":{"kind":"Name","value":"effects"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stepId"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"objectId"}},{"kind":"Field","name":{"kind":"Name","value":"reversed"}},{"kind":"Field","name":{"kind":"Name","value":"flowRunId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"runs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"templateKey"}},{"kind":"Field","name":{"kind":"Name","value":"trigger"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]}}]} as unknown as DocumentNode<SdkCustomRecordFieldsFragment, unknown>;
+export const SdkFlowTemplateFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFlowTemplateFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FlowTemplate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"recordType"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"sourceFormat"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"checksum"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}}]}}]} as unknown as DocumentNode<SdkFlowTemplateFieldsFragment, unknown>;
+export const SdkFlowRunFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFlowRunFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FlowRun"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"templateKey"}},{"kind":"Field","name":{"kind":"Name","value":"templateVersion"}},{"kind":"Field","name":{"kind":"Name","value":"recordId"}},{"kind":"Field","name":{"kind":"Name","value":"trigger"}},{"kind":"Field","name":{"kind":"Name","value":"recordRevision"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"outputs"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}}]}}]} as unknown as DocumentNode<SdkFlowRunFieldsFragment, unknown>;
+export const SdkCompanyDocumentFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCompanyDocumentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyDocument"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"filename"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"sha256"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"downloadUrl"}},{"kind":"Field","name":{"kind":"Name","value":"downloadExpiresAt"}}]}}]} as unknown as DocumentNode<SdkCompanyDocumentFieldsFragment, unknown>;
+export const SdkExportRunFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportRunFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportRun"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"files"}},{"kind":"Field","name":{"kind":"Name","value":"rowCounts"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"document"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkCompanyDocumentFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCompanyDocumentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyDocument"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"filename"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"sha256"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"downloadUrl"}},{"kind":"Field","name":{"kind":"Name","value":"downloadExpiresAt"}}]}}]} as unknown as DocumentNode<SdkExportRunFieldsFragment, unknown>;
+export const SdkExportDestinationFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportDestinationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportDestination"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"prefix"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"}},{"kind":"Field","name":{"kind":"Name","value":"verifiedAt"}},{"kind":"Field","name":{"kind":"Name","value":"credentialsExpireAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}}]} as unknown as DocumentNode<SdkExportDestinationFieldsFragment, unknown>;
+export const SdkExportScheduleFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportScheduleFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportSchedule"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"destination"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportDestinationFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"datasets"}},{"kind":"Field","name":{"kind":"Name","value":"format"}},{"kind":"Field","name":{"kind":"Name","value":"cron"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"companyScope"}},{"kind":"Field","name":{"kind":"Name","value":"pathTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"compression"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"lastRunAt"}},{"kind":"Field","name":{"kind":"Name","value":"nextRunAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportDestinationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportDestination"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"prefix"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"}},{"kind":"Field","name":{"kind":"Name","value":"verifiedAt"}},{"kind":"Field","name":{"kind":"Name","value":"credentialsExpireAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}}]} as unknown as DocumentNode<SdkExportScheduleFieldsFragment, unknown>;
 export const SdkPlatformCompanyFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkPlatformCompanyFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformCompany"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"platformId"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"legalName"}},{"kind":"Field","name":{"kind":"Name","value":"registrationCountry"}},{"kind":"Field","name":{"kind":"Name","value":"registrationNumber"}},{"kind":"Field","name":{"kind":"Name","value":"legalForm"}},{"kind":"Field","name":{"kind":"Name","value":"currency"}},{"kind":"Field","name":{"kind":"Name","value":"language"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}}]}}]} as unknown as DocumentNode<SdkPlatformCompanyFieldsFragment, unknown>;
 export const SdkPlatformUserFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkPlatformUserFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"platformId"}},{"kind":"Field","name":{"kind":"Name","value":"externalUserId"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}},{"kind":"Field","name":{"kind":"Name","value":"language"}},{"kind":"Field","name":{"kind":"Name","value":"disabledAt"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"access"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"profileId"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"role"}}]}}]}}]} as unknown as DocumentNode<SdkPlatformUserFieldsFragment, unknown>;
 export const SdkEmbedSessionFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkEmbedSessionFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"EmbedSession"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"platformUserId"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"origin"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"exchangedAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedReason"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"components"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"component"}},{"kind":"Field","name":{"kind":"Name","value":"features"}}]}}]}}]} as unknown as DocumentNode<SdkEmbedSessionFieldsFragment, unknown>;
@@ -5261,6 +6575,75 @@ export const SdkCostCenterDocument = {"kind":"Document","definitions":[{"kind":"
 export const SdkCreateCostCenterDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCreateCostCenter"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"profileId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateCostCenterInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createOneCostCenter"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"profileId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"profileId"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<SdkCreateCostCenterMutation, SdkCreateCostCenterMutationVariables>;
 export const SdkUpdateCostCenterDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpdateCostCenter"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateOneCostCenterInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateOneCostCenter"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}}]}}]}}]} as unknown as DocumentNode<SdkUpdateCostCenterMutation, SdkUpdateCostCenterMutationVariables>;
 export const SdkDeleteCostCenterDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkDeleteCostCenter"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteOneCostCenter"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<SdkDeleteCostCenterMutation, SdkDeleteCostCenterMutationVariables>;
+export const SdkUpsertRelationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertRelation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertRelationInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertRelation"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkUpsertFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertRelationMutation, SdkUpsertRelationMutationVariables>;
+export const SdkUpsertProductDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertProduct"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertProductInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertProduct"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkUpsertFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertProductMutation, SdkUpsertProductMutationVariables>;
+export const SdkUpsertProjectDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertProject"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertProjectInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertProject"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkUpsertFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertProjectMutation, SdkUpsertProjectMutationVariables>;
+export const SdkUpsertCostCenterDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertCostCenter"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertCostCenterInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertCostCenter"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkUpsertFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertCostCenterMutation, SdkUpsertCostCenterMutationVariables>;
+export const SdkUpsertSalesInvoiceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertSalesInvoice"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertSalesInvoiceInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertSalesInvoice"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkUpsertFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertSalesInvoiceMutation, SdkUpsertSalesInvoiceMutationVariables>;
+export const SdkUpsertPurchaseInvoiceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertPurchaseInvoice"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPurchaseInvoiceInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertPurchaseInvoice"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkUpsertFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertPurchaseInvoiceMutation, SdkUpsertPurchaseInvoiceMutationVariables>;
+export const SdkUpsertJournalEntryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertJournalEntry"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertJournalEntryInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertJournalEntry"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkUpsertFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertJournalEntryMutation, SdkUpsertJournalEntryMutationVariables>;
+export const SdkUpsertEmployeeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertEmployee"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertEmployeeInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertEmployee"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkUpsertFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertEmployeeMutation, SdkUpsertEmployeeMutationVariables>;
+export const SdkUpsertEmploymentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertEmployment"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertEmploymentInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertEmployment"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkUpsertFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkUpsertFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertPayload"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}}]} as unknown as DocumentNode<SdkUpsertEmploymentMutation, SdkUpsertEmploymentMutationVariables>;
+export const SdkSetObjectMetadataDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkSetObjectMetadata"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformObjectType"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"metadata"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"JSON"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setObjectMetadata"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"metadata"},"value":{"kind":"Variable","name":{"kind":"Name","value":"metadata"}}}]}]}}]} as unknown as DocumentNode<SdkSetObjectMetadataMutation, SdkSetObjectMetadataMutationVariables>;
+export const SdkPlatformObjectByExternalIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformObjectByExternalId"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformObjectType"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"externalId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformObjectByExternalId"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"externalId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"externalId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"deleted"}}]}}]}}]} as unknown as DocumentNode<SdkPlatformObjectByExternalIdQuery, SdkPlatformObjectByExternalIdQueryVariables>;
+export const SdkPlatformBulkJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformBulkJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"500"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformBulkJob"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkBulkJobFields"}},{"kind":"Field","name":{"kind":"Name","value":"results"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}},{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"line"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"objectId"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"path"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkBulkJobFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformBulkJob"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"lineCount"}},{"kind":"Field","name":{"kind":"Name","value":"processedCount"}},{"kind":"Field","name":{"kind":"Name","value":"createdCount"}},{"kind":"Field","name":{"kind":"Name","value":"updatedCount"}},{"kind":"Field","name":{"kind":"Name","value":"unchangedCount"}},{"kind":"Field","name":{"kind":"Name","value":"skippedCount"}},{"kind":"Field","name":{"kind":"Name","value":"failedCount"}},{"kind":"Field","name":{"kind":"Name","value":"dryRun"}},{"kind":"Field","name":{"kind":"Name","value":"emitEvents"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]} as unknown as DocumentNode<SdkPlatformBulkJobQuery, SdkPlatformBulkJobQueryVariables>;
+export const SdkPlatformBulkJobsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformBulkJobs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"20"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformBulkJobStatus"}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformBulkJobs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}},{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkBulkJobFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkBulkJobFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformBulkJob"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"lineCount"}},{"kind":"Field","name":{"kind":"Name","value":"processedCount"}},{"kind":"Field","name":{"kind":"Name","value":"createdCount"}},{"kind":"Field","name":{"kind":"Name","value":"updatedCount"}},{"kind":"Field","name":{"kind":"Name","value":"unchangedCount"}},{"kind":"Field","name":{"kind":"Name","value":"skippedCount"}},{"kind":"Field","name":{"kind":"Name","value":"failedCount"}},{"kind":"Field","name":{"kind":"Name","value":"dryRun"}},{"kind":"Field","name":{"kind":"Name","value":"emitEvents"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]} as unknown as DocumentNode<SdkPlatformBulkJobsQuery, SdkPlatformBulkJobsQueryVariables>;
+export const SdkCancelPlatformBulkJobDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCancelPlatformBulkJob"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cancelPlatformBulkJob"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkBulkJobFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkBulkJobFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformBulkJob"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"lineCount"}},{"kind":"Field","name":{"kind":"Name","value":"processedCount"}},{"kind":"Field","name":{"kind":"Name","value":"createdCount"}},{"kind":"Field","name":{"kind":"Name","value":"updatedCount"}},{"kind":"Field","name":{"kind":"Name","value":"unchangedCount"}},{"kind":"Field","name":{"kind":"Name","value":"skippedCount"}},{"kind":"Field","name":{"kind":"Name","value":"failedCount"}},{"kind":"Field","name":{"kind":"Name","value":"dryRun"}},{"kind":"Field","name":{"kind":"Name","value":"emitEvents"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]} as unknown as DocumentNode<SdkCancelPlatformBulkJobMutation, SdkCancelPlatformBulkJobMutationVariables>;
+export const SdkPlatformEventCatalogDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformEventCatalog"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformEventCatalog"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"module"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"wave"}}]}}]}}]} as unknown as DocumentNode<SdkPlatformEventCatalogQuery, SdkPlatformEventCatalogQueryVariables>;
+export const SdkPlatformEventsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformEvents"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformEventFilter"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"100"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformEvents"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"apiVersion"}},{"kind":"Field","name":{"kind":"Name","value":"sequence"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"company"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"objectId"}},{"kind":"Field","name":{"kind":"Name","value":"data"}},{"kind":"Field","name":{"kind":"Name","value":"requestId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]} as unknown as DocumentNode<SdkPlatformEventsQuery, SdkPlatformEventsQueryVariables>;
+export const SdkPlatformEventDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformEvent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformEvent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"apiVersion"}},{"kind":"Field","name":{"kind":"Name","value":"sequence"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"company"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"objectId"}},{"kind":"Field","name":{"kind":"Name","value":"data"}},{"kind":"Field","name":{"kind":"Name","value":"requestId"}}]}}]}}]} as unknown as DocumentNode<SdkPlatformEventQuery, SdkPlatformEventQueryVariables>;
+export const SdkPlatformWebhookEndpointsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformWebhookEndpoints"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformWebhookEndpoints"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkWebhookEndpointFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookEndpointFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookEndpoint"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"failoverUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"eventTypes"}},{"kind":"Field","name":{"kind":"Name","value":"enabled"}},{"kind":"Field","name":{"kind":"Name","value":"disabledReason"}},{"kind":"Field","name":{"kind":"Name","value":"apiVersion"}},{"kind":"Field","name":{"kind":"Name","value":"consecutiveFailures"}},{"kind":"Field","name":{"kind":"Name","value":"lastSuccessAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastFailureAt"}},{"kind":"Field","name":{"kind":"Name","value":"rotationEndsAt"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkPlatformWebhookEndpointsQuery, SdkPlatformWebhookEndpointsQueryVariables>;
+export const SdkPlatformWebhookDeliveriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformWebhookDeliveries"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"endpointId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformDeliveryFilter"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"50"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformWebhookDeliveries"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"endpointId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"endpointId"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkWebhookDeliveryFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookDeliveryFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookDelivery"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endpointId"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attemptCount"}},{"kind":"Field","name":{"kind":"Name","value":"replayCount"}},{"kind":"Field","name":{"kind":"Name","value":"nextAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"deliveredVia"}},{"kind":"Field","name":{"kind":"Name","value":"responseStatus"}},{"kind":"Field","name":{"kind":"Name","value":"durationMs"}},{"kind":"Field","name":{"kind":"Name","value":"responseExcerpt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkPlatformWebhookDeliveriesQuery, SdkPlatformWebhookDeliveriesQueryVariables>;
+export const SdkCreatePlatformWebhookEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCreatePlatformWebhookEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreatePlatformWebhookEndpointInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createPlatformWebhookEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"signingSecret"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkWebhookEndpointFields"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookEndpointFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookEndpoint"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"failoverUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"eventTypes"}},{"kind":"Field","name":{"kind":"Name","value":"enabled"}},{"kind":"Field","name":{"kind":"Name","value":"disabledReason"}},{"kind":"Field","name":{"kind":"Name","value":"apiVersion"}},{"kind":"Field","name":{"kind":"Name","value":"consecutiveFailures"}},{"kind":"Field","name":{"kind":"Name","value":"lastSuccessAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastFailureAt"}},{"kind":"Field","name":{"kind":"Name","value":"rotationEndsAt"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkCreatePlatformWebhookEndpointMutation, SdkCreatePlatformWebhookEndpointMutationVariables>;
+export const SdkUpdatePlatformWebhookEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpdatePlatformWebhookEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdatePlatformWebhookEndpointInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updatePlatformWebhookEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkWebhookEndpointFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookEndpointFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookEndpoint"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"failoverUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"eventTypes"}},{"kind":"Field","name":{"kind":"Name","value":"enabled"}},{"kind":"Field","name":{"kind":"Name","value":"disabledReason"}},{"kind":"Field","name":{"kind":"Name","value":"apiVersion"}},{"kind":"Field","name":{"kind":"Name","value":"consecutiveFailures"}},{"kind":"Field","name":{"kind":"Name","value":"lastSuccessAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastFailureAt"}},{"kind":"Field","name":{"kind":"Name","value":"rotationEndsAt"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkUpdatePlatformWebhookEndpointMutation, SdkUpdatePlatformWebhookEndpointMutationVariables>;
+export const SdkRotatePlatformWebhookSecretDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkRotatePlatformWebhookSecret"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"keepPreviousHours"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"24"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rotatePlatformWebhookSecret"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"keepPreviousHours"},"value":{"kind":"Variable","name":{"kind":"Name","value":"keepPreviousHours"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"signingSecret"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkWebhookEndpointFields"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookEndpointFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookEndpoint"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"failoverUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"eventTypes"}},{"kind":"Field","name":{"kind":"Name","value":"enabled"}},{"kind":"Field","name":{"kind":"Name","value":"disabledReason"}},{"kind":"Field","name":{"kind":"Name","value":"apiVersion"}},{"kind":"Field","name":{"kind":"Name","value":"consecutiveFailures"}},{"kind":"Field","name":{"kind":"Name","value":"lastSuccessAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastFailureAt"}},{"kind":"Field","name":{"kind":"Name","value":"rotationEndsAt"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkRotatePlatformWebhookSecretMutation, SdkRotatePlatformWebhookSecretMutationVariables>;
+export const SdkDeletePlatformWebhookEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkDeletePlatformWebhookEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deletePlatformWebhookEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<SdkDeletePlatformWebhookEndpointMutation, SdkDeletePlatformWebhookEndpointMutationVariables>;
+export const SdkPingPlatformWebhookEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkPingPlatformWebhookEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pingPlatformWebhookEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkWebhookDeliveryFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookDeliveryFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookDelivery"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endpointId"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attemptCount"}},{"kind":"Field","name":{"kind":"Name","value":"replayCount"}},{"kind":"Field","name":{"kind":"Name","value":"nextAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"deliveredVia"}},{"kind":"Field","name":{"kind":"Name","value":"responseStatus"}},{"kind":"Field","name":{"kind":"Name","value":"durationMs"}},{"kind":"Field","name":{"kind":"Name","value":"responseExcerpt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkPingPlatformWebhookEndpointMutation, SdkPingPlatformWebhookEndpointMutationVariables>;
+export const SdkReplayPlatformWebhookDeliveryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkReplayPlatformWebhookDelivery"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"replayPlatformWebhookDelivery"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkWebhookDeliveryFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookDeliveryFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookDelivery"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endpointId"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attemptCount"}},{"kind":"Field","name":{"kind":"Name","value":"replayCount"}},{"kind":"Field","name":{"kind":"Name","value":"nextAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"deliveredVia"}},{"kind":"Field","name":{"kind":"Name","value":"responseStatus"}},{"kind":"Field","name":{"kind":"Name","value":"durationMs"}},{"kind":"Field","name":{"kind":"Name","value":"responseExcerpt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkReplayPlatformWebhookDeliveryMutation, SdkReplayPlatformWebhookDeliveryMutationVariables>;
+export const SdkReplayPlatformWebhookDeliveriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkReplayPlatformWebhookDeliveries"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"endpointId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformDeliveryFilter"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"replayPlatformWebhookDeliveries"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"endpointId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"endpointId"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"matched"}},{"kind":"Field","name":{"kind":"Name","value":"enqueued"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]} as unknown as DocumentNode<SdkReplayPlatformWebhookDeliveriesMutation, SdkReplayPlatformWebhookDeliveriesMutationVariables>;
+export const SdkResendPlatformEventDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkResendPlatformEvent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"eventId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"endpointId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resendPlatformEvent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"eventId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"eventId"}}},{"kind":"Argument","name":{"kind":"Name","value":"endpointId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"endpointId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkWebhookDeliveryFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkWebhookDeliveryFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformWebhookDelivery"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"endpointId"}},{"kind":"Field","name":{"kind":"Name","value":"eventType"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attemptCount"}},{"kind":"Field","name":{"kind":"Name","value":"replayCount"}},{"kind":"Field","name":{"kind":"Name","value":"nextAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastAttemptAt"}},{"kind":"Field","name":{"kind":"Name","value":"deliveredVia"}},{"kind":"Field","name":{"kind":"Name","value":"responseStatus"}},{"kind":"Field","name":{"kind":"Name","value":"durationMs"}},{"kind":"Field","name":{"kind":"Name","value":"responseExcerpt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]} as unknown as DocumentNode<SdkResendPlatformEventMutation, SdkResendPlatformEventMutationVariables>;
+export const SdkDataSourcesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkDataSources"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dataSources"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkDataSourceFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkDataSourceFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSource"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"cadence"}},{"kind":"Field","name":{"kind":"Name","value":"expectedBy"}},{"kind":"Field","name":{"kind":"Name","value":"gapThresholdMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"historyMonths"}},{"kind":"Field","name":{"kind":"Name","value":"balanceAssertions"}},{"kind":"Field","name":{"kind":"Name","value":"delivery"}},{"kind":"Field","name":{"kind":"Name","value":"settings"}},{"kind":"Field","name":{"kind":"Name","value":"autoAttach"}}]}}]} as unknown as DocumentNode<SdkDataSourcesQuery, SdkDataSourcesQueryVariables>;
+export const SdkDataSourceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkDataSource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dataSource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkDataSourceFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkDataSourceFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSource"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"cadence"}},{"kind":"Field","name":{"kind":"Name","value":"expectedBy"}},{"kind":"Field","name":{"kind":"Name","value":"gapThresholdMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"historyMonths"}},{"kind":"Field","name":{"kind":"Name","value":"balanceAssertions"}},{"kind":"Field","name":{"kind":"Name","value":"delivery"}},{"kind":"Field","name":{"kind":"Name","value":"settings"}},{"kind":"Field","name":{"kind":"Name","value":"autoAttach"}}]}}]} as unknown as DocumentNode<SdkDataSourceQuery, SdkDataSourceQueryVariables>;
+export const SdkFeedHealthDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkFeedHealth"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"FeedHealthStatus"}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"50"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"feedHealth"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkFeedAccountFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"nextCursor"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFeedAccountFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FeedAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"iban"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"health"}},{"kind":"Field","name":{"kind":"Name","value":"statusSince"}},{"kind":"Field","name":{"kind":"Name","value":"lastDeliveryAt"}},{"kind":"Field","name":{"kind":"Name","value":"completeThrough"}},{"kind":"Field","name":{"kind":"Name","value":"detail"}},{"kind":"Field","name":{"kind":"Name","value":"lastBalance"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"amountMinor"}},{"kind":"Field","name":{"kind":"Name","value":"currency"}},{"kind":"Field","name":{"kind":"Name","value":"computedMinor"}},{"kind":"Field","name":{"kind":"Name","value":"differenceMinor"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]} as unknown as DocumentNode<SdkFeedHealthQuery, SdkFeedHealthQueryVariables>;
+export const SdkDataSourceFilesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkDataSourceFiles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"50"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dataSourceFiles"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"format"}},{"kind":"Field","name":{"kind":"Name","value":"receivedVia"}},{"kind":"Field","name":{"kind":"Name","value":"filename"}},{"kind":"Field","name":{"kind":"Name","value":"sha256"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"statements"}},{"kind":"Field","name":{"kind":"Name","value":"entries"}},{"kind":"Field","name":{"kind":"Name","value":"imported"}},{"kind":"Field","name":{"kind":"Name","value":"duplicates"}},{"kind":"Field","name":{"kind":"Name","value":"unroutedAccounts"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}},{"kind":"Field","name":{"kind":"Name","value":"nextCursor"}}]}}]}}]} as unknown as DocumentNode<SdkDataSourceFilesQuery, SdkDataSourceFilesQueryVariables>;
+export const SdkRegisterDataSourceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkRegisterDataSource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"RegisterDataSourceInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"registerDataSource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkDataSourceFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkDataSourceFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSource"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"cadence"}},{"kind":"Field","name":{"kind":"Name","value":"expectedBy"}},{"kind":"Field","name":{"kind":"Name","value":"gapThresholdMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"historyMonths"}},{"kind":"Field","name":{"kind":"Name","value":"balanceAssertions"}},{"kind":"Field","name":{"kind":"Name","value":"delivery"}},{"kind":"Field","name":{"kind":"Name","value":"settings"}},{"kind":"Field","name":{"kind":"Name","value":"autoAttach"}}]}}]} as unknown as DocumentNode<SdkRegisterDataSourceMutation, SdkRegisterDataSourceMutationVariables>;
+export const SdkUpdateDataSourceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpdateDataSource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateDataSourceInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateDataSource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkDataSourceFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkDataSourceFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSource"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"cadence"}},{"kind":"Field","name":{"kind":"Name","value":"expectedBy"}},{"kind":"Field","name":{"kind":"Name","value":"gapThresholdMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"historyMonths"}},{"kind":"Field","name":{"kind":"Name","value":"balanceAssertions"}},{"kind":"Field","name":{"kind":"Name","value":"delivery"}},{"kind":"Field","name":{"kind":"Name","value":"settings"}},{"kind":"Field","name":{"kind":"Name","value":"autoAttach"}}]}}]} as unknown as DocumentNode<SdkUpdateDataSourceMutation, SdkUpdateDataSourceMutationVariables>;
+export const SdkRetireDataSourceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkRetireDataSource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"retireDataSource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkDataSourceFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkDataSourceFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSource"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"cadence"}},{"kind":"Field","name":{"kind":"Name","value":"expectedBy"}},{"kind":"Field","name":{"kind":"Name","value":"gapThresholdMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"historyMonths"}},{"kind":"Field","name":{"kind":"Name","value":"balanceAssertions"}},{"kind":"Field","name":{"kind":"Name","value":"delivery"}},{"kind":"Field","name":{"kind":"Name","value":"settings"}},{"kind":"Field","name":{"kind":"Name","value":"autoAttach"}}]}}]} as unknown as DocumentNode<SdkRetireDataSourceMutation, SdkRetireDataSourceMutationVariables>;
+export const SdkAttachDataSourceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkAttachDataSource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"backfillFrom"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"attachDataSource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}},{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"backfillFrom"},"value":{"kind":"Variable","name":{"kind":"Name","value":"backfillFrom"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkAttachmentFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkAttachmentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSourceAttachment"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sourceKey"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"companyExternalId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attachedAt"}},{"kind":"Field","name":{"kind":"Name","value":"backfillFrom"}},{"kind":"Field","name":{"kind":"Name","value":"backfillStatus"}},{"kind":"Field","name":{"kind":"Name","value":"lastDeliveryAt"}}]}}]} as unknown as DocumentNode<SdkAttachDataSourceMutation, SdkAttachDataSourceMutationVariables>;
+export const SdkPauseDataSourceAttachmentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkPauseDataSourceAttachment"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pauseDataSourceAttachment"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}},{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkAttachmentFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkAttachmentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSourceAttachment"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sourceKey"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"companyExternalId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attachedAt"}},{"kind":"Field","name":{"kind":"Name","value":"backfillFrom"}},{"kind":"Field","name":{"kind":"Name","value":"backfillStatus"}},{"kind":"Field","name":{"kind":"Name","value":"lastDeliveryAt"}}]}}]} as unknown as DocumentNode<SdkPauseDataSourceAttachmentMutation, SdkPauseDataSourceAttachmentMutationVariables>;
+export const SdkDetachDataSourceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkDetachDataSource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"detachDataSource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}},{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkAttachmentFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkAttachmentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"DataSourceAttachment"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sourceKey"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"companyExternalId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attachedAt"}},{"kind":"Field","name":{"kind":"Name","value":"backfillFrom"}},{"kind":"Field","name":{"kind":"Name","value":"backfillStatus"}},{"kind":"Field","name":{"kind":"Name","value":"lastDeliveryAt"}}]}}]} as unknown as DocumentNode<SdkDetachDataSourceMutation, SdkDetachDataSourceMutationVariables>;
+export const SdkUpsertFeedBankAccountDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertFeedBankAccount"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"source"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BankAccountFeedInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertFeedBankAccount"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"source"},"value":{"kind":"Variable","name":{"kind":"Name","value":"source"}}},{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"account"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkFeedAccountFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFeedAccountFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FeedAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"iban"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"health"}},{"kind":"Field","name":{"kind":"Name","value":"statusSince"}},{"kind":"Field","name":{"kind":"Name","value":"lastDeliveryAt"}},{"kind":"Field","name":{"kind":"Name","value":"completeThrough"}},{"kind":"Field","name":{"kind":"Name","value":"detail"}},{"kind":"Field","name":{"kind":"Name","value":"lastBalance"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"amountMinor"}},{"kind":"Field","name":{"kind":"Name","value":"currency"}},{"kind":"Field","name":{"kind":"Name","value":"computedMinor"}},{"kind":"Field","name":{"kind":"Name","value":"differenceMinor"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]} as unknown as DocumentNode<SdkUpsertFeedBankAccountMutation, SdkUpsertFeedBankAccountMutationVariables>;
+export const SdkIngestBankTransactionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkIngestBankTransactions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"source"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"transactions"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BankTransactionFeedInput"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ingestBankTransactions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"source"},"value":{"kind":"Variable","name":{"kind":"Name","value":"source"}}},{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"account"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"Argument","name":{"kind":"Name","value":"transactions"},"value":{"kind":"Variable","name":{"kind":"Name","value":"transactions"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"line"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"path"}}]}}]}}]}}]} as unknown as DocumentNode<SdkIngestBankTransactionsMutation, SdkIngestBankTransactionsMutationVariables>;
+export const SdkReportBankBalancesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkReportBankBalances"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"source"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"balances"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BankBalanceInput"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"reportBankBalances"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"source"},"value":{"kind":"Variable","name":{"kind":"Name","value":"source"}}},{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"account"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"Argument","name":{"kind":"Name","value":"balances"},"value":{"kind":"Variable","name":{"kind":"Name","value":"balances"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"amountMinor"}},{"kind":"Field","name":{"kind":"Name","value":"currency"}},{"kind":"Field","name":{"kind":"Name","value":"computedMinor"}},{"kind":"Field","name":{"kind":"Name","value":"differenceMinor"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]} as unknown as DocumentNode<SdkReportBankBalancesMutation, SdkReportBankBalancesMutationVariables>;
+export const SdkReportFeedWatermarkDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkReportFeedWatermark"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"source"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"account"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"completeThrough"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"reportFeedWatermark"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"source"},"value":{"kind":"Variable","name":{"kind":"Name","value":"source"}}},{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"account"},"value":{"kind":"Variable","name":{"kind":"Name","value":"account"}}},{"kind":"Argument","name":{"kind":"Name","value":"completeThrough"},"value":{"kind":"Variable","name":{"kind":"Name","value":"completeThrough"}}}]}]}}]} as unknown as DocumentNode<SdkReportFeedWatermarkMutation, SdkReportFeedWatermarkMutationVariables>;
+export const SdkIngestWorkedHoursDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkIngestWorkedHours"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"source"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"entries"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WorkedHoursFeedInput"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ingestWorkedHours"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"source"},"value":{"kind":"Variable","name":{"kind":"Name","value":"source"}}},{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"entries"},"value":{"kind":"Variable","name":{"kind":"Name","value":"entries"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"line"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"path"}}]}}]}}]}}]} as unknown as DocumentNode<SdkIngestWorkedHoursMutation, SdkIngestWorkedHoursMutationVariables>;
+export const SdkBankTransactionBookingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkBankTransactionBookings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"externalIds"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bankTransactionBookings"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"externalIds"},"value":{"kind":"Variable","name":{"kind":"Name","value":"externalIds"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"transactionId"}},{"kind":"Field","name":{"kind":"Name","value":"booking"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"counterpart"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"label"}}]}},{"kind":"Field","name":{"kind":"Name","value":"ledger"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"legs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ledgerCode"}},{"kind":"Field","name":{"kind":"Name","value":"ledgerName"}},{"kind":"Field","name":{"kind":"Name","value":"debitMinor"}},{"kind":"Field","name":{"kind":"Name","value":"creditMinor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"taxCode"}},{"kind":"Field","name":{"kind":"Name","value":"vatAmountMinor"}},{"kind":"Field","name":{"kind":"Name","value":"category"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"label"}}]}},{"kind":"Field","name":{"kind":"Name","value":"receipt"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"documentIds"}},{"kind":"Field","name":{"kind":"Name","value":"requestedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"bookedAt"}},{"kind":"Field","name":{"kind":"Name","value":"bookedBy"}},{"kind":"Field","name":{"kind":"Name","value":"reviewReason"}}]}}]}}]}}]} as unknown as DocumentNode<SdkBankTransactionBookingsQuery, SdkBankTransactionBookingsQueryVariables>;
+export const SdkPlatformRecordTypesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformRecordTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformRecordTypes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkRecordTypeFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkRecordTypeFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformRecordType"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"schema"}},{"kind":"Field","name":{"kind":"Name","value":"states"}},{"kind":"Field","name":{"kind":"Name","value":"initialState"}},{"kind":"Field","name":{"kind":"Name","value":"transitions"}},{"kind":"Field","name":{"kind":"Name","value":"displayTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"deepLinkTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]} as unknown as DocumentNode<SdkPlatformRecordTypesQuery, SdkPlatformRecordTypesQueryVariables>;
+export const SdkDefinePlatformRecordTypeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkDefinePlatformRecordType"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DefineRecordTypeInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"definePlatformRecordType"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkRecordTypeFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkRecordTypeFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformRecordType"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"schema"}},{"kind":"Field","name":{"kind":"Name","value":"states"}},{"kind":"Field","name":{"kind":"Name","value":"initialState"}},{"kind":"Field","name":{"kind":"Name","value":"transitions"}},{"kind":"Field","name":{"kind":"Name","value":"displayTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"deepLinkTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]} as unknown as DocumentNode<SdkDefinePlatformRecordTypeMutation, SdkDefinePlatformRecordTypeMutationVariables>;
+export const SdkUpsertCustomRecordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpsertCustomRecord"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpsertCustomRecordInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upsertCustomRecord"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"record"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkCustomRecordFields"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCustomRecordFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CustomRecord"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"data"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"revision"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}},{"kind":"Field","name":{"kind":"Name","value":"effects"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stepId"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"objectId"}},{"kind":"Field","name":{"kind":"Name","value":"reversed"}},{"kind":"Field","name":{"kind":"Name","value":"flowRunId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"runs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"templateKey"}},{"kind":"Field","name":{"kind":"Name","value":"trigger"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]}}]} as unknown as DocumentNode<SdkUpsertCustomRecordMutation, SdkUpsertCustomRecordMutationVariables>;
+export const SdkDeleteCustomRecordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkDeleteCustomRecord"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"externalId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteCustomRecord"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"externalId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"externalId"}}}]}]}}]} as unknown as DocumentNode<SdkDeleteCustomRecordMutation, SdkDeleteCustomRecordMutationVariables>;
+export const SdkCustomRecordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkCustomRecord"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"externalId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customRecord"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"externalId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"externalId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkCustomRecordFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCustomRecordFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CustomRecord"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"data"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"revision"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}},{"kind":"Field","name":{"kind":"Name","value":"effects"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stepId"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"objectId"}},{"kind":"Field","name":{"kind":"Name","value":"reversed"}},{"kind":"Field","name":{"kind":"Name","value":"flowRunId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"runs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"templateKey"}},{"kind":"Field","name":{"kind":"Name","value":"trigger"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]}}]} as unknown as DocumentNode<SdkCustomRecordQuery, SdkCustomRecordQueryVariables>;
+export const SdkCustomRecordsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkCustomRecords"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"50"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customRecords"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkCustomRecordFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"nextCursor"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCustomRecordFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CustomRecord"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"data"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"revision"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}},{"kind":"Field","name":{"kind":"Name","value":"effects"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stepId"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"objectId"}},{"kind":"Field","name":{"kind":"Name","value":"reversed"}},{"kind":"Field","name":{"kind":"Name","value":"flowRunId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"runs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"templateKey"}},{"kind":"Field","name":{"kind":"Name","value":"trigger"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]}}]} as unknown as DocumentNode<SdkCustomRecordsQuery, SdkCustomRecordsQueryVariables>;
+export const SdkFlowTemplatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkFlowTemplates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"flowTemplates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkFlowTemplateFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFlowTemplateFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FlowTemplate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"recordType"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"sourceFormat"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"checksum"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}}]}}]} as unknown as DocumentNode<SdkFlowTemplatesQuery, SdkFlowTemplatesQueryVariables>;
+export const SdkSaveFlowTemplateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkSaveFlowTemplate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"source"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"format"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"FlowTemplateFormat"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"saveFlowTemplate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"source"},"value":{"kind":"Variable","name":{"kind":"Name","value":"source"}}},{"kind":"Argument","name":{"kind":"Name","value":"format"},"value":{"kind":"Variable","name":{"kind":"Name","value":"format"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkFlowTemplateFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFlowTemplateFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FlowTemplate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"recordType"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"sourceFormat"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"checksum"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}}]}}]} as unknown as DocumentNode<SdkSaveFlowTemplateMutation, SdkSaveFlowTemplateMutationVariables>;
+export const SdkActivateFlowTemplateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkActivateFlowTemplate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"version"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activateFlowTemplate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}},{"kind":"Argument","name":{"kind":"Name","value":"version"},"value":{"kind":"Variable","name":{"kind":"Name","value":"version"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkFlowTemplateFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFlowTemplateFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FlowTemplate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"recordType"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"sourceFormat"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"checksum"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}}]}}]} as unknown as DocumentNode<SdkActivateFlowTemplateMutation, SdkActivateFlowTemplateMutationVariables>;
+export const SdkRetireFlowTemplateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkRetireFlowTemplate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"retireFlowTemplate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkFlowTemplateFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFlowTemplateFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FlowTemplate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"recordType"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"sourceFormat"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"checksum"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}}]}}]} as unknown as DocumentNode<SdkRetireFlowTemplateMutation, SdkRetireFlowTemplateMutationVariables>;
+export const SdkTestFlowTemplateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkTestFlowTemplate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"source"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"format"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"FlowTemplateFormat"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"records"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"JSON"}}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"testFlowTemplate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"source"},"value":{"kind":"Variable","name":{"kind":"Name","value":"source"}}},{"kind":"Argument","name":{"kind":"Name","value":"format"},"value":{"kind":"Variable","name":{"kind":"Name","value":"format"}}},{"kind":"Argument","name":{"kind":"Name","value":"records"},"value":{"kind":"Variable","name":{"kind":"Name","value":"records"}}},{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"valid"}},{"kind":"Field","name":{"kind":"Name","value":"errors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"path"}}]}},{"kind":"Field","name":{"kind":"Name","value":"runs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recordExternalId"}},{"kind":"Field","name":{"kind":"Name","value":"trigger"}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"path"}}]}},{"kind":"Field","name":{"kind":"Name","value":"plannedObjects"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stepId"}},{"kind":"Field","name":{"kind":"Name","value":"objectType"}},{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}}]}}]}}]}}]}}]} as unknown as DocumentNode<SdkTestFlowTemplateMutation, SdkTestFlowTemplateMutationVariables>;
+export const SdkFlowRunsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkFlowRuns"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"50"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"flowRuns"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkFlowRunFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"nextCursor"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFlowRunFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FlowRun"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"templateKey"}},{"kind":"Field","name":{"kind":"Name","value":"templateVersion"}},{"kind":"Field","name":{"kind":"Name","value":"recordId"}},{"kind":"Field","name":{"kind":"Name","value":"trigger"}},{"kind":"Field","name":{"kind":"Name","value":"recordRevision"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"outputs"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}}]}}]} as unknown as DocumentNode<SdkFlowRunsQuery, SdkFlowRunsQueryVariables>;
+export const SdkRetryFlowRunDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkRetryFlowRun"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"retryFlowRun"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkFlowRunFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkFlowRunFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FlowRun"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"templateKey"}},{"kind":"Field","name":{"kind":"Name","value":"templateVersion"}},{"kind":"Field","name":{"kind":"Name","value":"recordId"}},{"kind":"Field","name":{"kind":"Name","value":"trigger"}},{"kind":"Field","name":{"kind":"Name","value":"recordRevision"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"outputs"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}}]}}]} as unknown as DocumentNode<SdkRetryFlowRunMutation, SdkRetryFlowRunMutationVariables>;
+export const SdkPlatformReportDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformReport"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformReportInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformReport"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"currency"}},{"kind":"Field","name":{"kind":"Name","value":"from"}},{"kind":"Field","name":{"kind":"Name","value":"to"}},{"kind":"Field","name":{"kind":"Name","value":"asOf"}},{"kind":"Field","name":{"kind":"Name","value":"generatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"data"}}]}}]}}]} as unknown as DocumentNode<SdkPlatformReportQuery, SdkPlatformReportQueryVariables>;
+export const SdkPlatformReportDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformReportDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformReportInput"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"format"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ReportFormat"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformReportDocument"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}},{"kind":"Argument","name":{"kind":"Name","value":"format"},"value":{"kind":"Variable","name":{"kind":"Name","value":"format"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkCompanyDocumentFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCompanyDocumentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyDocument"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"filename"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"sha256"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"downloadUrl"}},{"kind":"Field","name":{"kind":"Name","value":"downloadExpiresAt"}}]}}]} as unknown as DocumentNode<SdkPlatformReportDocumentQuery, SdkPlatformReportDocumentQueryVariables>;
+export const SdkCompanyDocumentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkCompanyDocument"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"kind"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyDocumentKind"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"object"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ObjectRef"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"params"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"JSON"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"companyDocument"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"kind"},"value":{"kind":"Variable","name":{"kind":"Name","value":"kind"}}},{"kind":"Argument","name":{"kind":"Name","value":"object"},"value":{"kind":"Variable","name":{"kind":"Name","value":"object"}}},{"kind":"Argument","name":{"kind":"Name","value":"params"},"value":{"kind":"Variable","name":{"kind":"Name","value":"params"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkCompanyDocumentFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCompanyDocumentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyDocument"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"filename"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"sha256"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"downloadUrl"}},{"kind":"Field","name":{"kind":"Name","value":"downloadExpiresAt"}}]}}]} as unknown as DocumentNode<SdkCompanyDocumentQuery, SdkCompanyDocumentQueryVariables>;
+export const SdkRequestXafExportDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkRequestXafExport"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"company"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyRef"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"financialYear"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"from"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"to"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"requestXafExport"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"company"},"value":{"kind":"Variable","name":{"kind":"Name","value":"company"}}},{"kind":"Argument","name":{"kind":"Name","value":"financialYear"},"value":{"kind":"Variable","name":{"kind":"Name","value":"financialYear"}}},{"kind":"Argument","name":{"kind":"Name","value":"from"},"value":{"kind":"Variable","name":{"kind":"Name","value":"from"}}},{"kind":"Argument","name":{"kind":"Name","value":"to"},"value":{"kind":"Variable","name":{"kind":"Name","value":"to"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportRunFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCompanyDocumentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyDocument"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"filename"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"sha256"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"downloadUrl"}},{"kind":"Field","name":{"kind":"Name","value":"downloadExpiresAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportRunFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportRun"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"files"}},{"kind":"Field","name":{"kind":"Name","value":"rowCounts"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"document"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkCompanyDocumentFields"}}]}}]}}]} as unknown as DocumentNode<SdkRequestXafExportMutation, SdkRequestXafExportMutationVariables>;
+export const SdkPlatformExportDestinationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformExportDestinations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformExportDestinations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportDestinationFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportDestinationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportDestination"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"prefix"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"}},{"kind":"Field","name":{"kind":"Name","value":"verifiedAt"}},{"kind":"Field","name":{"kind":"Name","value":"credentialsExpireAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}}]} as unknown as DocumentNode<SdkPlatformExportDestinationsQuery, SdkPlatformExportDestinationsQueryVariables>;
+export const SdkPlatformExportSchedulesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformExportSchedules"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformExportSchedules"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportScheduleFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportDestinationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportDestination"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"prefix"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"}},{"kind":"Field","name":{"kind":"Name","value":"verifiedAt"}},{"kind":"Field","name":{"kind":"Name","value":"credentialsExpireAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportScheduleFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportSchedule"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"destination"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportDestinationFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"datasets"}},{"kind":"Field","name":{"kind":"Name","value":"format"}},{"kind":"Field","name":{"kind":"Name","value":"cron"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"companyScope"}},{"kind":"Field","name":{"kind":"Name","value":"pathTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"compression"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"lastRunAt"}},{"kind":"Field","name":{"kind":"Name","value":"nextRunAt"}}]}}]} as unknown as DocumentNode<SdkPlatformExportSchedulesQuery, SdkPlatformExportSchedulesQueryVariables>;
+export const SdkPlatformExportRunDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformExportRun"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformExportRun"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportRunFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCompanyDocumentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyDocument"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"filename"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"sha256"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"downloadUrl"}},{"kind":"Field","name":{"kind":"Name","value":"downloadExpiresAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportRunFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportRun"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"files"}},{"kind":"Field","name":{"kind":"Name","value":"rowCounts"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"document"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkCompanyDocumentFields"}}]}}]}}]} as unknown as DocumentNode<SdkPlatformExportRunQuery, SdkPlatformExportRunQueryVariables>;
+export const SdkCreatePlatformExportDestinationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCreatePlatformExportDestination"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateExportDestinationInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createPlatformExportDestination"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportDestinationFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportDestinationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportDestination"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"prefix"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"}},{"kind":"Field","name":{"kind":"Name","value":"verifiedAt"}},{"kind":"Field","name":{"kind":"Name","value":"credentialsExpireAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}}]} as unknown as DocumentNode<SdkCreatePlatformExportDestinationMutation, SdkCreatePlatformExportDestinationMutationVariables>;
+export const SdkUpdatePlatformExportDestinationCredentialsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpdatePlatformExportDestinationCredentials"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"credentials"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"JSON"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"credentialsExpireAt"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"DateTime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updatePlatformExportDestinationCredentials"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}},{"kind":"Argument","name":{"kind":"Name","value":"credentials"},"value":{"kind":"Variable","name":{"kind":"Name","value":"credentials"}}},{"kind":"Argument","name":{"kind":"Name","value":"credentialsExpireAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"credentialsExpireAt"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportDestinationFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportDestinationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportDestination"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"prefix"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"}},{"kind":"Field","name":{"kind":"Name","value":"verifiedAt"}},{"kind":"Field","name":{"kind":"Name","value":"credentialsExpireAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}}]} as unknown as DocumentNode<SdkUpdatePlatformExportDestinationCredentialsMutation, SdkUpdatePlatformExportDestinationCredentialsMutationVariables>;
+export const SdkDeletePlatformExportDestinationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkDeletePlatformExportDestination"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deletePlatformExportDestination"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}}]}]}}]} as unknown as DocumentNode<SdkDeletePlatformExportDestinationMutation, SdkDeletePlatformExportDestinationMutationVariables>;
+export const SdkCreatePlatformExportScheduleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCreatePlatformExportSchedule"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateExportScheduleInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createPlatformExportSchedule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportScheduleFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportDestinationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportDestination"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"prefix"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"}},{"kind":"Field","name":{"kind":"Name","value":"verifiedAt"}},{"kind":"Field","name":{"kind":"Name","value":"credentialsExpireAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportScheduleFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportSchedule"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"destination"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportDestinationFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"datasets"}},{"kind":"Field","name":{"kind":"Name","value":"format"}},{"kind":"Field","name":{"kind":"Name","value":"cron"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"companyScope"}},{"kind":"Field","name":{"kind":"Name","value":"pathTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"compression"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"lastRunAt"}},{"kind":"Field","name":{"kind":"Name","value":"nextRunAt"}}]}}]} as unknown as DocumentNode<SdkCreatePlatformExportScheduleMutation, SdkCreatePlatformExportScheduleMutationVariables>;
+export const SdkUpdatePlatformExportScheduleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpdatePlatformExportSchedule"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateExportScheduleInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updatePlatformExportSchedule"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportScheduleFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportDestinationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportDestination"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"bucket"}},{"kind":"Field","name":{"kind":"Name","value":"prefix"}},{"kind":"Field","name":{"kind":"Name","value":"region"}},{"kind":"Field","name":{"kind":"Name","value":"endpoint"}},{"kind":"Field","name":{"kind":"Name","value":"verifiedAt"}},{"kind":"Field","name":{"kind":"Name","value":"credentialsExpireAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportScheduleFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportSchedule"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"destination"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportDestinationFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"datasets"}},{"kind":"Field","name":{"kind":"Name","value":"format"}},{"kind":"Field","name":{"kind":"Name","value":"cron"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}},{"kind":"Field","name":{"kind":"Name","value":"companyScope"}},{"kind":"Field","name":{"kind":"Name","value":"pathTemplate"}},{"kind":"Field","name":{"kind":"Name","value":"compression"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"lastRunAt"}},{"kind":"Field","name":{"kind":"Name","value":"nextRunAt"}}]}}]} as unknown as DocumentNode<SdkUpdatePlatformExportScheduleMutation, SdkUpdatePlatformExportScheduleMutationVariables>;
+export const SdkRunPlatformExportNowDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkRunPlatformExportNow"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"runPlatformExportNow"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkExportRunFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkCompanyDocumentFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CompanyDocument"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"filename"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"sha256"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"downloadUrl"}},{"kind":"Field","name":{"kind":"Name","value":"downloadExpiresAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkExportRunFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformExportRun"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"files"}},{"kind":"Field","name":{"kind":"Name","value":"rowCounts"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"document"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkCompanyDocumentFields"}}]}}]}}]} as unknown as DocumentNode<SdkRunPlatformExportNowMutation, SdkRunPlatformExportNowMutationVariables>;
 export const SdkMonetaryAccountsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkMonetaryAccounts"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ConnectionCursor"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MonetaryAccountFilter"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sorting"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MonetaryAccountSort"}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"monetaryAccounts"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"paging"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}]}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}},{"kind":"Argument","name":{"kind":"Name","value":"sorting"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sorting"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"currency"}},{"kind":"Field","name":{"kind":"Name","value":"iban"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"balance"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}}]}}]}}]}}]} as unknown as DocumentNode<SdkMonetaryAccountsQuery, SdkMonetaryAccountsQueryVariables>;
 export const SdkMonetaryAccountDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkMonetaryAccount"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"monetaryAccount"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"currency"}},{"kind":"Field","name":{"kind":"Name","value":"iban"}},{"kind":"Field","name":{"kind":"Name","value":"bic"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"balance"}},{"kind":"Field","name":{"kind":"Name","value":"ledger"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}}]}}]}}]} as unknown as DocumentNode<SdkMonetaryAccountQuery, SdkMonetaryAccountQueryVariables>;
 export const SdkCreateMonetaryAccountDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCreateMonetaryAccount"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"profileId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateMonetaryAccountInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createOneMonetaryAccount"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"profileId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"profileId"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<SdkCreateMonetaryAccountMutation, SdkCreateMonetaryAccountMutationVariables>;

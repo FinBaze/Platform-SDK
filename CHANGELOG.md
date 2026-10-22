@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.0
+
+Wave 3: data in and out.
+
+- **`platform.upsert.*`.** Create or update relations, products, projects, cost centers, sales and purchase invoices, journal entries, employees and employments by your own id (`unchanged` when nothing differs); `setMetadata` and `lookup`.
+- **`platform.bulk.*`.** NDJSON uploads over REST (`create`), `retrieve` with per-line results, `list`, `cancel` and `wait`.
+- **`platform.dataSources.*`, `platform.bankFeed.*`.** Register and attach sources, deliver bank accounts, transactions, balances, watermarks and worked hours, upload camt.053/052 and MT940 files, read feed health.
+- **`platform.bankTransactions.bookings`.** What happened to your transactions in the books.
+- **`platform.records.*`, `platform.flowTemplates.*`.** Record types and records, flow templates (save, test, activate) and their runs.
+- **`platform.events.*`, `platform.webhookEndpoints.*`.** The event catalogue and ordered event feed; webhook endpoints with secret rotation, deliveries, replay and resend.
+- **`platform.reports`, `platform.documents`, `platform.exports`.** Reports, documents behind signed links, the audit file, and export destinations and schedules.
+- **Webhooks.** `webhooks.constructPlatformEvent` (typed envelope) and `constructEvent` both take one secret or a list, so a rotation needs no gap.
+- **HTTP.** `FinbazeHttpClient.rest` for the two REST endpoints (bulk jobs, statement files).
+
 ## 1.0.0
 
 - **Auth.** `secretKey` (platform secret and restricted keys), with the API host chosen by key (`fb_sk_test_…` → sandbox). `asUser()` returns a client acting as one platform user, with the token minted and cached for you.

@@ -31,6 +31,20 @@ import {
 } from '../../generated/graphql.js';
 import type { FinbazeHttpClient, RequestOptions } from '../../http.js';
 import { toFinbazeList, withAutoPaging, type ListParams } from '../../pagination.js';
+import {
+  Bulk,
+  BankFeed,
+  BankTransactions,
+  DataSources,
+  Documents,
+  Events,
+  Exports,
+  FlowTemplates,
+  Records,
+  Reports,
+  Upserts,
+  WebhookEndpoints,
+} from './data.js';
 
 type Role = 'admin' | 'member' | 'viewer';
 
@@ -307,6 +321,20 @@ export class PlatformNamespace {
   readonly features: Features;
   readonly usage: Usage;
   readonly origins: Origins;
+  /** Create or update objects by your own id. */
+  readonly upsert: Upserts;
+  /** NDJSON uploads of many objects. */
+  readonly bulk: Bulk;
+  readonly dataSources: DataSources;
+  readonly bankFeed: BankFeed;
+  readonly bankTransactions: BankTransactions;
+  readonly records: Records;
+  readonly flowTemplates: FlowTemplates;
+  readonly events: Events;
+  readonly webhookEndpoints: WebhookEndpoints;
+  readonly reports: Reports;
+  readonly documents: Documents;
+  readonly exports: Exports;
 
   constructor(http: FinbazeHttpClient) {
     this.companies = new Companies(http);
@@ -316,5 +344,17 @@ export class PlatformNamespace {
     this.features = new Features(http);
     this.usage = new Usage(http);
     this.origins = new Origins(http);
+    this.upsert = new Upserts(http);
+    this.bulk = new Bulk(http);
+    this.dataSources = new DataSources(http);
+    this.bankFeed = new BankFeed(http);
+    this.bankTransactions = new BankTransactions(http);
+    this.records = new Records(http);
+    this.flowTemplates = new FlowTemplates(http);
+    this.events = new Events(http);
+    this.webhookEndpoints = new WebhookEndpoints(http);
+    this.reports = new Reports(http);
+    this.documents = new Documents(http);
+    this.exports = new Exports(http);
   }
 }

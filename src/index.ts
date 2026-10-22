@@ -12,7 +12,8 @@ export {
 export type { FinbazeList, ListParams } from './pagination.js';
 export type { CreateEmbedSessionParams } from './resources/platform/index.js';
 export type { BookingLookup } from './resources/companies/index.js';
-export type { WebhookEvent } from './webhooks.js';
+export type { PlatformWebhookEvent, WebhookEvent } from './webhooks.js';
+export type { BulkCreateParams, BulkJobReceipt, CompanyRef, CursorPage, ObjectRef, StatementFormat } from './resources/platform/data.js';
 export { Webhooks } from './webhooks.js';
 export { OAuth, decodeAccessToken, generatePkce } from './oauth.js';
 export type { OAuthTokens } from './oauth.js';

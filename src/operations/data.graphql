@@ -1,0 +1,788 @@
+# Wave 3: data in and out. Hand-written documents for the platform data API.
+
+fragment SdkUpsertFields on UpsertPayload {
+  status
+  id
+  externalId
+}
+
+mutation SdkUpsertRelation($input: UpsertRelationInput!) { upsertRelation(input: $input) { ...SdkUpsertFields } }
+mutation SdkUpsertProduct($input: UpsertProductInput!) { upsertProduct(input: $input) { ...SdkUpsertFields } }
+mutation SdkUpsertProject($input: UpsertProjectInput!) { upsertProject(input: $input) { ...SdkUpsertFields } }
+mutation SdkUpsertCostCenter($input: UpsertCostCenterInput!) { upsertCostCenter(input: $input) { ...SdkUpsertFields } }
+mutation SdkUpsertSalesInvoice($input: UpsertSalesInvoiceInput!) { upsertSalesInvoice(input: $input) { ...SdkUpsertFields } }
+mutation SdkUpsertPurchaseInvoice($input: UpsertPurchaseInvoiceInput!) { upsertPurchaseInvoice(input: $input) { ...SdkUpsertFields } }
+mutation SdkUpsertJournalEntry($input: UpsertJournalEntryInput!) { upsertJournalEntry(input: $input) { ...SdkUpsertFields } }
+mutation SdkUpsertEmployee($input: UpsertEmployeeInput!) { upsertEmployee(input: $input) { ...SdkUpsertFields } }
+mutation SdkUpsertEmployment($input: UpsertEmploymentInput!) { upsertEmployment(input: $input) { ...SdkUpsertFields } }
+
+mutation SdkSetObjectMetadata($type: PlatformObjectType!, $id: ID!, $metadata: JSON!) {
+  setObjectMetadata(type: $type, id: $id, metadata: $metadata)
+}
+
+query SdkPlatformObjectByExternalId($company: CompanyRef!, $type: PlatformObjectType!, $externalId: String!) {
+  platformObjectByExternalId(company: $company, type: $type, externalId: $externalId) {
+    type
+    id
+    externalId
+    deleted
+  }
+}
+
+fragment SdkBulkJobFields on PlatformBulkJob {
+  id
+  objectType
+  mode
+  status
+  lineCount
+  processedCount
+  createdCount
+  updatedCount
+  unchangedCount
+  skippedCount
+  failedCount
+  dryRun
+  emitEvents
+  created
+  startedAt
+  finishedAt
+  error
+}
+
+query SdkPlatformBulkJob($id: ID!, $first: Int! = 500, $after: String, $status: [String!]) {
+  platformBulkJob(id: $id) {
+    ...SdkBulkJobFields
+    results(first: $first, after: $after, status: $status) {
+      nodes {
+        line
+        status
+        companyId
+        objectId
+        externalId
+        error {
+          code
+          message
+          path
+        }
+      }
+      endCursor
+      hasNextPage
+    }
+  }
+}
+
+query SdkPlatformBulkJobs($first: Int! = 20, $after: String, $status: [PlatformBulkJobStatus!]) {
+  platformBulkJobs(first: $first, after: $after, status: $status) {
+    nodes {
+      ...SdkBulkJobFields
+    }
+    endCursor
+    hasNextPage
+  }
+}
+
+mutation SdkCancelPlatformBulkJob($id: ID!) {
+  cancelPlatformBulkJob(id: $id) {
+    ...SdkBulkJobFields
+  }
+}
+
+# ---- Events and webhooks ----------------------------------------------------
+
+fragment SdkWebhookEndpointFields on PlatformWebhookEndpoint {
+  id
+  url
+  failoverUrl
+  description
+  eventTypes
+  enabled
+  disabledReason
+  apiVersion
+  consecutiveFailures
+  lastSuccessAt
+  lastFailureAt
+  rotationEndsAt
+  created
+}
+
+fragment SdkWebhookDeliveryFields on PlatformWebhookDelivery {
+  id
+  endpointId
+  eventType
+  eventId
+  companyId
+  status
+  attemptCount
+  replayCount
+  nextAttemptAt
+  lastAttemptAt
+  deliveredVia
+  responseStatus
+  durationMs
+  responseExcerpt
+  error
+  created
+}
+
+query SdkPlatformEventCatalog {
+  platformEventCatalog {
+    type
+    objectType
+    module
+    description
+    status
+    wave
+  }
+}
+
+query SdkPlatformEvents($filter: PlatformEventFilter, $after: String, $first: Int! = 100) {
+  platformEvents(filter: $filter, after: $after, first: $first) {
+    nodes {
+      id
+      type
+      apiVersion
+      sequence
+      created
+      occurredAt
+      company {
+        id
+        externalId
+      }
+      objectType
+      objectId
+      data
+      requestId
+    }
+    endCursor
+    hasNextPage
+  }
+}
+
+query SdkPlatformEvent($id: ID!) {
+  platformEvent(id: $id) {
+    id
+    type
+    apiVersion
+    sequence
+    created
+    occurredAt
+    company {
+      id
+      externalId
+    }
+    objectType
+    objectId
+    data
+    requestId
+  }
+}
+
+query SdkPlatformWebhookEndpoints {
+  platformWebhookEndpoints {
+    ...SdkWebhookEndpointFields
+  }
+}
+
+query SdkPlatformWebhookDeliveries($endpointId: ID!, $filter: PlatformDeliveryFilter, $after: String, $first: Int! = 50) {
+  platformWebhookDeliveries(endpointId: $endpointId, filter: $filter, after: $after, first: $first) {
+    nodes {
+      ...SdkWebhookDeliveryFields
+    }
+    endCursor
+    hasNextPage
+  }
+}
+
+mutation SdkCreatePlatformWebhookEndpoint($input: CreatePlatformWebhookEndpointInput!) {
+  createPlatformWebhookEndpoint(input: $input) {
+    signingSecret
+    endpoint {
+      ...SdkWebhookEndpointFields
+    }
+  }
+}
+
+mutation SdkUpdatePlatformWebhookEndpoint($id: ID!, $input: UpdatePlatformWebhookEndpointInput!) {
+  updatePlatformWebhookEndpoint(id: $id, input: $input) {
+    ...SdkWebhookEndpointFields
+  }
+}
+
+mutation SdkRotatePlatformWebhookSecret($id: ID!, $keepPreviousHours: Int! = 24) {
+  rotatePlatformWebhookSecret(id: $id, keepPreviousHours: $keepPreviousHours) {
+    signingSecret
+    endpoint {
+      ...SdkWebhookEndpointFields
+    }
+  }
+}
+
+mutation SdkDeletePlatformWebhookEndpoint($id: ID!) {
+  deletePlatformWebhookEndpoint(id: $id)
+}
+
+mutation SdkPingPlatformWebhookEndpoint($id: ID!) {
+  pingPlatformWebhookEndpoint(id: $id) {
+    ...SdkWebhookDeliveryFields
+  }
+}
+
+mutation SdkReplayPlatformWebhookDelivery($id: ID!) {
+  replayPlatformWebhookDelivery(id: $id) {
+    ...SdkWebhookDeliveryFields
+  }
+}
+
+mutation SdkReplayPlatformWebhookDeliveries($endpointId: ID!, $filter: PlatformDeliveryFilter!) {
+  replayPlatformWebhookDeliveries(endpointId: $endpointId, filter: $filter) {
+    id
+    matched
+    enqueued
+    status
+  }
+}
+
+mutation SdkResendPlatformEvent($eventId: ID!, $endpointId: ID!) {
+  resendPlatformEvent(eventId: $eventId, endpointId: $endpointId) {
+    ...SdkWebhookDeliveryFields
+  }
+}
+
+# ---- Data sources and bank feeds ---------------------------------------------
+
+fragment SdkDataSourceFields on DataSource {
+  id
+  key
+  type
+  name
+  status
+  cadence
+  expectedBy
+  gapThresholdMinutes
+  historyMonths
+  balanceAssertions
+  delivery
+  settings
+  autoAttach
+}
+
+fragment SdkFeedAccountFields on FeedAccount {
+  id
+  externalId
+  iban
+  name
+  health
+  statusSince
+  lastDeliveryAt
+  completeThrough
+  detail
+  lastBalance {
+    date
+    type
+    amountMinor
+    currency
+    computedMinor
+    differenceMinor
+    status
+  }
+}
+
+query SdkDataSources {
+  dataSources {
+    ...SdkDataSourceFields
+  }
+}
+
+query SdkDataSource($key: String!) {
+  dataSource(key: $key) {
+    ...SdkDataSourceFields
+  }
+}
+
+query SdkFeedHealth($status: [FeedHealthStatus!], $first: Int! = 50, $after: String) {
+  feedHealth(status: $status, first: $first, after: $after) {
+    nodes {
+      ...SdkFeedAccountFields
+    }
+    nextCursor
+  }
+}
+
+query SdkDataSourceFiles($key: String!, $first: Int! = 50, $after: String) {
+  dataSourceFiles(key: $key, first: $first, after: $after) {
+    nodes {
+      id
+      format
+      receivedVia
+      filename
+      sha256
+      size
+      status
+      statements
+      entries
+      imported
+      duplicates
+      unroutedAccounts
+      error
+      created
+    }
+    nextCursor
+  }
+}
+
+mutation SdkRegisterDataSource($input: RegisterDataSourceInput!) {
+  registerDataSource(input: $input) {
+    ...SdkDataSourceFields
+  }
+}
+
+mutation SdkUpdateDataSource($key: String!, $input: UpdateDataSourceInput!) {
+  updateDataSource(key: $key, input: $input) {
+    ...SdkDataSourceFields
+  }
+}
+
+mutation SdkRetireDataSource($key: String!) {
+  retireDataSource(key: $key) {
+    ...SdkDataSourceFields
+  }
+}
+
+fragment SdkAttachmentFields on DataSourceAttachment {
+  id
+  sourceKey
+  companyId
+  companyExternalId
+  status
+  attachedAt
+  backfillFrom
+  backfillStatus
+  lastDeliveryAt
+}
+
+mutation SdkAttachDataSource($key: String!, $company: CompanyRef!, $backfillFrom: String) {
+  attachDataSource(key: $key, company: $company, backfillFrom: $backfillFrom) {
+    ...SdkAttachmentFields
+  }
+}
+
+mutation SdkPauseDataSourceAttachment($key: String!, $company: CompanyRef!) {
+  pauseDataSourceAttachment(key: $key, company: $company) {
+    ...SdkAttachmentFields
+  }
+}
+
+mutation SdkDetachDataSource($key: String!, $company: CompanyRef!) {
+  detachDataSource(key: $key, company: $company) {
+    ...SdkAttachmentFields
+  }
+}
+
+mutation SdkUpsertFeedBankAccount($source: String!, $company: CompanyRef!, $account: BankAccountFeedInput!) {
+  upsertFeedBankAccount(source: $source, company: $company, account: $account) {
+    ...SdkFeedAccountFields
+  }
+}
+
+mutation SdkIngestBankTransactions($source: String!, $company: CompanyRef!, $account: String!, $transactions: [BankTransactionFeedInput!]!) {
+  ingestBankTransactions(source: $source, company: $company, account: $account, transactions: $transactions) {
+    line
+    status
+    id
+    externalId
+    error {
+      code
+      message
+      path
+    }
+  }
+}
+
+mutation SdkReportBankBalances($source: String!, $company: CompanyRef!, $account: String!, $balances: [BankBalanceInput!]!) {
+  reportBankBalances(source: $source, company: $company, account: $account, balances: $balances) {
+    date
+    type
+    amountMinor
+    currency
+    computedMinor
+    differenceMinor
+    status
+  }
+}
+
+mutation SdkReportFeedWatermark($source: String!, $company: CompanyRef!, $account: String, $completeThrough: String!) {
+  reportFeedWatermark(source: $source, company: $company, account: $account, completeThrough: $completeThrough)
+}
+
+mutation SdkIngestWorkedHours($source: String!, $company: CompanyRef!, $entries: [WorkedHoursFeedInput!]!) {
+  ingestWorkedHours(source: $source, company: $company, entries: $entries) {
+    line
+    status
+    id
+    externalId
+    error {
+      code
+      message
+      path
+    }
+  }
+}
+
+query SdkBankTransactionBookings($company: CompanyRef!, $externalIds: [String!]!) {
+  bankTransactionBookings(company: $company, externalIds: $externalIds) {
+    externalId
+    transactionId
+    booking {
+      status
+      counterpart {
+        type
+        id
+        externalId
+        label
+      }
+      ledger {
+        code
+        name
+      }
+      legs {
+        ledgerCode
+        ledgerName
+        debitMinor
+        creditMinor
+      }
+      taxCode
+      vatAmountMinor
+      category {
+        key
+        label
+      }
+      receipt {
+        status
+        documentIds
+        requestedAt
+      }
+      bookedAt
+      bookedBy
+      reviewReason
+    }
+  }
+}
+
+# ---- Custom records and flow templates ---------------------------------------
+
+fragment SdkRecordTypeFields on PlatformRecordType {
+  id
+  key
+  version
+  name
+  schema
+  states
+  initialState
+  transitions
+  displayTemplate
+  deepLinkTemplate
+  status
+}
+
+fragment SdkCustomRecordFields on CustomRecord {
+  id
+  type
+  externalId
+  status
+  data
+  metadata
+  revision
+  occurredAt
+  displayName
+  created
+  updated
+  effects {
+    stepId
+    objectType
+    objectId
+    reversed
+    flowRunId
+  }
+  runs {
+    id
+    templateKey
+    trigger
+    status
+    error
+  }
+}
+
+fragment SdkFlowTemplateFields on FlowTemplate {
+  id
+  key
+  version
+  recordType
+  status
+  sourceFormat
+  source
+  checksum
+  activatedAt
+}
+
+fragment SdkFlowRunFields on FlowRun {
+  id
+  templateKey
+  templateVersion
+  recordId
+  trigger
+  recordRevision
+  status
+  attempts
+  error
+  outputs
+  startedAt
+  finishedAt
+}
+
+query SdkPlatformRecordTypes {
+  platformRecordTypes {
+    ...SdkRecordTypeFields
+  }
+}
+
+mutation SdkDefinePlatformRecordType($input: DefineRecordTypeInput!) {
+  definePlatformRecordType(input: $input) {
+    ...SdkRecordTypeFields
+  }
+}
+
+mutation SdkUpsertCustomRecord($input: UpsertCustomRecordInput!) {
+  upsertCustomRecord(input: $input) {
+    status
+    record {
+      ...SdkCustomRecordFields
+    }
+  }
+}
+
+mutation SdkDeleteCustomRecord($company: CompanyRef!, $type: String!, $externalId: String!) {
+  deleteCustomRecord(company: $company, type: $type, externalId: $externalId)
+}
+
+query SdkCustomRecord($company: CompanyRef!, $type: String!, $externalId: String!) {
+  customRecord(company: $company, type: $type, externalId: $externalId) {
+    ...SdkCustomRecordFields
+  }
+}
+
+query SdkCustomRecords($company: CompanyRef!, $type: String!, $status: [String!], $first: Int! = 50, $after: String) {
+  customRecords(company: $company, type: $type, status: $status, first: $first, after: $after) {
+    nodes {
+      ...SdkCustomRecordFields
+    }
+    nextCursor
+  }
+}
+
+query SdkFlowTemplates($key: String) {
+  flowTemplates(key: $key) {
+    ...SdkFlowTemplateFields
+  }
+}
+
+mutation SdkSaveFlowTemplate($source: String!, $format: FlowTemplateFormat!) {
+  saveFlowTemplate(source: $source, format: $format) {
+    ...SdkFlowTemplateFields
+  }
+}
+
+mutation SdkActivateFlowTemplate($key: String!, $version: Int!) {
+  activateFlowTemplate(key: $key, version: $version) {
+    ...SdkFlowTemplateFields
+  }
+}
+
+mutation SdkRetireFlowTemplate($key: String!) {
+  retireFlowTemplate(key: $key) {
+    ...SdkFlowTemplateFields
+  }
+}
+
+mutation SdkTestFlowTemplate($source: String!, $format: FlowTemplateFormat!, $records: [JSON!]!, $company: CompanyRef) {
+  testFlowTemplate(source: $source, format: $format, records: $records, company: $company) {
+    valid
+    errors {
+      code
+      message
+      path
+    }
+    runs {
+      recordExternalId
+      trigger
+      error {
+        code
+        message
+        path
+      }
+      plannedObjects {
+        stepId
+        objectType
+        action
+        externalId
+        summary
+      }
+    }
+  }
+}
+
+query SdkFlowRuns($status: [String!], $first: Int! = 50, $after: String) {
+  flowRuns(status: $status, first: $first, after: $after) {
+    nodes {
+      ...SdkFlowRunFields
+    }
+    nextCursor
+  }
+}
+
+mutation SdkRetryFlowRun($id: ID!) {
+  retryFlowRun(id: $id) {
+    ...SdkFlowRunFields
+  }
+}
+
+# ---- Reports, documents and exports ------------------------------------------
+
+fragment SdkCompanyDocumentFields on CompanyDocument {
+  id
+  kind
+  filename
+  contentType
+  size
+  sha256
+  created
+  downloadUrl
+  downloadExpiresAt
+}
+
+fragment SdkExportRunFields on PlatformExportRun {
+  id
+  kind
+  runDate
+  status
+  files
+  rowCounts
+  error
+  startedAt
+  finishedAt
+  document {
+    ...SdkCompanyDocumentFields
+  }
+}
+
+fragment SdkExportDestinationFields on PlatformExportDestination {
+  id
+  key
+  type
+  bucket
+  prefix
+  region
+  endpoint
+  verifiedAt
+  credentialsExpireAt
+  lastError
+}
+
+fragment SdkExportScheduleFields on PlatformExportSchedule {
+  id
+  key
+  destination {
+    ...SdkExportDestinationFields
+  }
+  datasets
+  format
+  cron
+  timezone
+  companyScope
+  pathTemplate
+  compression
+  status
+  lastRunAt
+  nextRunAt
+}
+
+query SdkPlatformReport($company: CompanyRef!, $input: PlatformReportInput!) {
+  platformReport(company: $company, input: $input) {
+    type
+    currency
+    from
+    to
+    asOf
+    generatedAt
+    data
+  }
+}
+
+query SdkPlatformReportDocument($company: CompanyRef!, $input: PlatformReportInput!, $format: ReportFormat!) {
+  platformReportDocument(company: $company, input: $input, format: $format) {
+    ...SdkCompanyDocumentFields
+  }
+}
+
+query SdkCompanyDocument($company: CompanyRef!, $kind: CompanyDocumentKind!, $object: ObjectRef, $params: JSON) {
+  companyDocument(company: $company, kind: $kind, object: $object, params: $params) {
+    ...SdkCompanyDocumentFields
+  }
+}
+
+mutation SdkRequestXafExport($company: CompanyRef!, $financialYear: Int, $from: String, $to: String) {
+  requestXafExport(company: $company, financialYear: $financialYear, from: $from, to: $to) {
+    ...SdkExportRunFields
+  }
+}
+
+query SdkPlatformExportDestinations {
+  platformExportDestinations {
+    ...SdkExportDestinationFields
+  }
+}
+
+query SdkPlatformExportSchedules {
+  platformExportSchedules {
+    ...SdkExportScheduleFields
+  }
+}
+
+query SdkPlatformExportRun($id: ID!) {
+  platformExportRun(id: $id) {
+    ...SdkExportRunFields
+  }
+}
+
+mutation SdkCreatePlatformExportDestination($input: CreateExportDestinationInput!) {
+  createPlatformExportDestination(input: $input) {
+    ...SdkExportDestinationFields
+  }
+}
+
+mutation SdkUpdatePlatformExportDestinationCredentials($key: String!, $credentials: JSON!, $credentialsExpireAt: DateTime) {
+  updatePlatformExportDestinationCredentials(key: $key, credentials: $credentials, credentialsExpireAt: $credentialsExpireAt) {
+    ...SdkExportDestinationFields
+  }
+}
+
+mutation SdkDeletePlatformExportDestination($key: String!) {
+  deletePlatformExportDestination(key: $key)
+}
+
+mutation SdkCreatePlatformExportSchedule($input: CreateExportScheduleInput!) {
+  createPlatformExportSchedule(input: $input) {
+    ...SdkExportScheduleFields
+  }
+}
+
+mutation SdkUpdatePlatformExportSchedule($key: String!, $input: UpdateExportScheduleInput!) {
+  updatePlatformExportSchedule(key: $key, input: $input) {
+    ...SdkExportScheduleFields
+  }
+}
+
+mutation SdkRunPlatformExportNow($key: String!) {
+  runPlatformExportNow(key: $key) {
+    ...SdkExportRunFields
+  }
+}

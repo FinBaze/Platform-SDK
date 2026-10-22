@@ -1,6 +1,6 @@
 {
   "name": "@finbaze/platform-sdk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "FinBaze platform SDK: companies, users, embed sessions, webhooks and the v2 GraphQL API.",
   "license": "UNLICENSED",
   "type": "module",
