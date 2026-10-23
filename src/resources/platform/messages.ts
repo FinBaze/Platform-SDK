@@ -1,7 +1,20 @@
 import {
   SdkAcknowledgeMessageDocument,
   SdkAcknowledgeMessagesDocument,
+  SdkClearPlatformMessageCopyDocument,
   SdkClearPlatformMessageRoutingDocument,
+  SdkCreatePlatformSenderDomainDocument,
+  SdkDisablePlatformSenderDomainDocument,
+  SdkMyNotificationsDocument,
+  SdkMarkNotificationsReadDocument,
+  SdkPlatformMessageCopyDocument,
+  SdkPlatformSenderDomainsDocument,
+  SdkPreviewPlatformMessageCopyDocument,
+  SdkSetNotificationPreferenceDocument,
+  SdkSetPlatformMessageCopyDocument,
+  SdkVerifyPlatformSenderDomainDocument,
+  type SetNotificationPreferenceInput,
+  type SetPlatformMessageCopyInput,
   SdkMarkMessageReadDocument,
   SdkMessageCatalogueDocument,
   SdkPlatformMessageRoutingDocument,
@@ -136,6 +149,35 @@ export class Messages {
       return (await this.http.request(SdkSetPlatformMessageRoutingDocument, { input: { ...rest, profileId: company } })).setPlatformMessageRouting;
     },
     clear: async (id: string) => (await this.http.request(SdkClearPlatformMessageRoutingDocument, { id })).clearPlatformMessageRouting,
+  };
+
+  /** Your own wording per message type, locale and variant (`push`, `in_app`, `email_subject`, `email_text`, ...). */
+  readonly copy = {
+    list: async (type?: MessageType) => (await this.http.request(SdkPlatformMessageCopyDocument, { type })).platformMessageCopy,
+    /** Renders a template with sample data and lists what is wrong with it. */
+    preview: async (params: { type: MessageType; variant: string; template: string; data: Record<string, unknown> }) =>
+      (await this.http.request(SdkPreviewPlatformMessageCopyDocument, params)).previewPlatformMessageCopy,
+    set: async (input: SetPlatformMessageCopyInput) => (await this.http.request(SdkSetPlatformMessageCopyDocument, { input })).setPlatformMessageCopy,
+    clear: async (id: string) => (await this.http.request(SdkClearPlatformMessageCopyDocument, { id })).clearPlatformMessageCopy,
+  };
+
+  /** Domains FinBaze sends mail from for your companies, so messages never show "via FinBaze". Add the DNS records, then `verify`. */
+  readonly senderDomains = {
+    list: async () => (await this.http.request(SdkPlatformSenderDomainsDocument)).platformSenderDomains,
+    create: async (params: { domain: string; fromLocalPart?: string }) =>
+      (await this.http.request(SdkCreatePlatformSenderDomainDocument, { input: params })).createPlatformSenderDomain,
+    verify: async (id: string) => (await this.http.request(SdkVerifyPlatformSenderDomainDocument, { id })).verifyPlatformSenderDomain,
+    disable: async (id: string) => (await this.http.request(SdkDisablePlatformSenderDomainDocument, { id })).disablePlatformSenderDomain,
+  };
+
+  /** The in-app notification centre of the user behind a user token. */
+  readonly notifications = {
+    list: async (params: { company?: string; unreadOnly?: boolean; limit?: number; starting_after?: string } = {}) =>
+      (await this.http.request(SdkMyNotificationsDocument, { companyId: params.company, unreadOnly: params.unreadOnly, first: params.limit, after: params.starting_after })).myNotifications,
+    markRead: async (params: { ids?: string[]; all?: boolean; company?: string }) =>
+      (await this.http.request(SdkMarkNotificationsReadDocument, { ids: params.ids, all: params.all, companyId: params.company })).markNotificationsRead,
+    setPreference: async (input: SetNotificationPreferenceInput) =>
+      (await this.http.request(SdkSetNotificationPreferenceDocument, { input })).setNotificationPreference,
   };
 
   readonly settings = {

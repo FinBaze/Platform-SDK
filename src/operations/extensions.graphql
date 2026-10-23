@@ -1,0 +1,153 @@
+# Extensions (Wave 4.7): custom actions, links, custom fields, field control and slots.
+
+fragment SdkCustomActionFields on PlatformCustomAction {
+  id
+  key
+  label
+  icon
+  placements
+  contextType
+  visibleWhen
+  delivery
+  enabled
+}
+
+fragment SdkCustomFieldDefinitionFields on CustomFieldDefinition {
+  id
+  entityType
+  key
+  label
+  type
+  options
+  required
+  editableBy
+  showIn
+  includeInEvents
+  includeOnDocuments
+  position
+  archived
+}
+
+query SdkPlatformCustomActions {
+  platformCustomActions {
+    ...SdkCustomActionFields
+  }
+}
+
+mutation SdkUpsertCustomAction($input: UpsertCustomActionInput!) {
+  upsertCustomAction(input: $input) {
+    ...SdkCustomActionFields
+  }
+}
+
+mutation SdkDeleteCustomAction($id: ID!) {
+  deleteCustomAction(id: $id)
+}
+
+mutation SdkInvokeCustomAction($key: String!, $contextType: String!, $contextId: ID!) {
+  invokeCustomAction(key: $key, contextType: $contextType, contextId: $contextId) {
+    key
+    contextType
+    contextId
+    externalId
+    links {
+      label
+      url
+      resourceType
+    }
+  }
+}
+
+mutation SdkInvokeSlotItem($slot: String!, $key: String!, $contextType: String!, $contextId: ID!) {
+  invokeSlotItem(slot: $slot, key: $key, contextType: $contextType, contextId: $contextId) {
+    key
+    contextType
+    contextId
+    externalId
+    links {
+      label
+      url
+      resourceType
+    }
+  }
+}
+
+query SdkPlatformLinkTemplates {
+  platformLinkTemplates {
+    id
+    resourceType
+    urlTemplate
+    label
+  }
+}
+
+mutation SdkUpsertLinkTemplate($input: UpsertLinkTemplateInput!) {
+  upsertLinkTemplate(input: $input) {
+    id
+    resourceType
+    urlTemplate
+    label
+  }
+}
+
+mutation SdkDeleteLinkTemplate($id: ID!) {
+  deleteLinkTemplate(id: $id)
+}
+
+query SdkPartnerLinks($objectType: String!, $objectId: ID!, $locale: String) {
+  partnerLinks(objectType: $objectType, objectId: $objectId, locale: $locale) {
+    label
+    url
+    resourceType
+  }
+}
+
+query SdkCustomFieldDefinitions($entityType: String!) {
+  customFieldDefinitions(entityType: $entityType) {
+    ...SdkCustomFieldDefinitionFields
+  }
+}
+
+mutation SdkUpsertCustomFieldDefinition($input: UpsertCustomFieldDefinitionInput!) {
+  upsertCustomFieldDefinition(input: $input) {
+    ...SdkCustomFieldDefinitionFields
+  }
+}
+
+mutation SdkArchiveCustomFieldDefinition($id: ID!) {
+  archiveCustomFieldDefinition(id: $id) {
+    ...SdkCustomFieldDefinitionFields
+  }
+}
+
+query SdkCustomFieldValues($entityType: String!, $entityId: ID!) {
+  customFieldValues(entityType: $entityType, entityId: $entityId)
+}
+
+mutation SdkSetCustomFieldValues($entityType: String!, $entityId: ID!, $values: JSONObject!) {
+  setCustomFieldValues(entityType: $entityType, entityId: $entityId, values: $values)
+}
+
+query SdkFieldControls($view: String!, $companyId: ID) {
+  fieldControls(view: $view, companyId: $companyId) {
+    view
+    field
+    mode
+    presetValue
+    companyId
+  }
+}
+
+mutation SdkSetFieldControl($input: SetFieldControlInput!) {
+  setFieldControl(input: $input) {
+    view
+    field
+    mode
+    presetValue
+    companyId
+  }
+}
+
+mutation SdkClearFieldControl($view: String!, $field: String!, $companyId: ID) {
+  clearFieldControl(view: $view, field: $field, companyId: $companyId)
+}

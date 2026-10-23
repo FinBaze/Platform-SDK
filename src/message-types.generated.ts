@@ -2,41 +2,66 @@
 
 export type MessageCategory = "account_security" | "tax_deadlines" | "documents" | "approvals" | "sales_correspondence" | "payroll_correspondence" | "ai_agents" | "billing" | "lifecycle_marketing" | "banking" | "insights" | "firm_relations" | "custom" | "internal";
 
-export type MessageType = "agents.task_budget_exhausted" | "agents.task_completed" | "agents.task_failed" | "agents.task_waiting_approval" | "agents.task_waiting_input" | "approvals.pay_run_ready" | "banking.lunchflow_consent" | "billing.plan_upgrade_request" | "documents.receipt_missing" | "documents.received_available" | "documents.request_digest" | "documents.request_reminder" | "insights.budget_run_rate_digest" | "lifecycle.founder_checkin" | "lifecycle.onboarding_resume" | "lifecycle.plan_welcome" | "lifecycle.setup_step" | "sales.invoice_sent" | "sales.reminder_sent" | "tax.deadline_upcoming" | "tax.filing_accepted" | "tax.filing_ready" | "tax.filing_rejected" | "tax.threshold_approaching" | "tax.threshold_exceeded";
+export type MessageType = "account.email_verification" | "account.membership_invite" | "account.password_reset" | "agents.task_budget_exhausted" | "agents.task_completed" | "agents.task_failed" | "agents.task_waiting_approval" | "agents.task_waiting_input" | "approvals.pay_run_ready" | "assistant.inbound_reply" | "banking.lunchflow_consent" | "billing.firm_client_plan_activated" | "billing.firm_client_plan_cancelled" | "billing.firm_client_subscription_cancelled" | "billing.payroll_addon_enabled" | "billing.plan_upgrade_request" | "custom.automation_email" | "custom.automation_whatsapp" | "custom.notification" | "documents.inbound_unsorted" | "documents.receipt_missing" | "documents.received_available" | "documents.request_digest" | "documents.request_reminder" | "firm.client_connect_invite" | "firm.client_hmrc_removal_notice" | "firm.client_onboarding_invite" | "firm.client_transferred_away" | "insights.budget_run_rate_digest" | "internal.plan_subscribed" | "lifecycle.founder_checkin" | "lifecycle.onboarding_resume" | "lifecycle.plan_welcome" | "lifecycle.platform_onboarding_invite" | "lifecycle.practice_invoice" | "lifecycle.setup_step" | "payroll.payslip_available" | "payroll.year_document_available" | "sales.invoice_payment_failed" | "sales.invoice_payment_received" | "sales.invoice_sent" | "sales.quote_sent" | "sales.recurring_invoice" | "sales.reminder_sent" | "tax.deadline_upcoming" | "tax.filing_accepted" | "tax.filing_ready" | "tax.filing_rejected" | "tax.threshold_approaching" | "tax.threshold_exceeded";
+
+/** `account.email_verification` (account_security, critical). */
+export type AccountEmailVerificationData = {
+  verifyUrl: string;
+  locale?: string;
+};
+
+/** `account.membership_invite` (account_security, normal). */
+export type AccountMembershipInviteData = {
+  inviteUrl: string;
+  resourceName: string;
+  permissionLabel: string;
+  locale: string;
+};
+
+/** `account.password_reset` (account_security, critical). */
+export type AccountPasswordResetData = {
+  resetUrl: string;
+  locale?: string;
+};
 
 /** `agents.task_budget_exhausted` (ai_agents, normal). */
 export type AgentsTaskBudgetExhaustedData = {
-  taskId: string;
   title: string;
-  summary?: string;
+  subject: string;
+  body: string;
+  replyTo?: string;
 };
 
 /** `agents.task_completed` (ai_agents, normal). */
 export type AgentsTaskCompletedData = {
-  taskId: string;
   title: string;
-  summary?: string;
+  subject: string;
+  body: string;
+  replyTo?: string;
 };
 
 /** `agents.task_failed` (ai_agents, normal). */
 export type AgentsTaskFailedData = {
-  taskId: string;
   title: string;
-  summary?: string;
+  subject: string;
+  body: string;
+  replyTo?: string;
 };
 
 /** `agents.task_waiting_approval` (approvals, critical). */
 export type AgentsTaskWaitingApprovalData = {
-  taskId: string;
   title: string;
-  summary?: string;
+  subject: string;
+  body: string;
+  replyTo?: string;
 };
 
 /** `agents.task_waiting_input` (ai_agents, normal). */
 export type AgentsTaskWaitingInputData = {
-  taskId: string;
   title: string;
-  summary?: string;
+  subject: string;
+  body: string;
+  replyTo?: string;
 };
 
 /** `approvals.pay_run_ready` (approvals, critical). */
@@ -44,13 +69,91 @@ export type ApprovalsPayRunReadyData = {
   payRunId: string;
 };
 
+/** `assistant.inbound_reply` (ai_agents, normal). */
+export type AssistantInboundReplyData = {
+  replyTo: string;
+  subject: string;
+  body: string;
+  inReplyTo?: string;
+  references?: Array<string>;
+};
+
 /** `banking.lunchflow_consent` (banking, normal). */
 export type BankingLunchflowConsentData = {
-  connectionId: string;
+  language: string;
+  variant: "approaching" | "expired";
+  accountNames: Array<string>;
+  reconnectUrl: string;
+};
+
+/** `billing.firm_client_plan_activated` (billing, normal). */
+export type BillingFirmClientPlanActivatedData = {
+  language: string;
+  clientName: string;
+  planName: string;
+  audience: "admin" | "client";
+};
+
+/** `billing.firm_client_plan_cancelled` (billing, normal). */
+export type BillingFirmClientPlanCancelledData = {
+  language: string;
+  clientName: string;
+  planName: string;
+  canceledAt: string | unknown;
+  accessUntil: string | unknown;
+};
+
+/** `billing.firm_client_subscription_cancelled` (billing, normal). */
+export type BillingFirmClientSubscriptionCancelledData = {
+  clientProfileId: string;
+  planName: string;
+  canceledAt: string | unknown;
+  accessUntil: string | unknown;
+  minimumTermEndsAt: string | unknown;
+  minimumTermMonths: number;
+};
+
+/** `billing.payroll_addon_enabled` (billing, normal). */
+export type BillingPayrollAddonEnabledData = {
+  language: string;
+  companyName: string;
+  payrollUrl: string;
 };
 
 /** `billing.plan_upgrade_request` (billing, normal). */
-export type BillingPlanUpgradeRequestData = Record<string, never>;
+export type BillingPlanUpgradeRequestData = {
+  subject: string;
+  body: string;
+};
+
+/** `custom.automation_email` (custom, normal). */
+export type CustomAutomationEmailData = {
+  subject: string;
+  heading: string;
+  body: string;
+};
+
+/** `custom.automation_whatsapp` (custom, normal). */
+export type CustomAutomationWhatsappData = {
+  text: string;
+};
+
+/** `custom.notification` (custom, normal). */
+export type CustomNotificationData = {
+  sender: unknown;
+  subject: string;
+  body: string;
+  replyTo?: string | null;
+};
+
+/** `documents.inbound_unsorted` (documents, normal). */
+export type DocumentsInboundUnsortedData = {
+  replyTo: string;
+  purchaseEmail: string;
+  salesEmail: string;
+  lettersEmail: string;
+  locale?: string | null;
+};
 
 /** `documents.receipt_missing` (documents, digestible). */
 export type DocumentsReceiptMissingData = {
@@ -60,136 +163,258 @@ export type DocumentsReceiptMissingData = {
 /** `documents.received_available` (documents, normal). */
 export type DocumentsReceivedAvailableData = {
   documentId: string;
-  filename: string;
+  language: string;
 };
 
 /** `documents.request_digest` (documents, digestible). */
 export type DocumentsRequestDigestData = {
-  requestIds: Array<string>;
-  bookkeeperId?: string;
+  language: string;
+  isReminder?: boolean;
+  requests: Array<{
+    id: string;
+    title: string;
+    type: string;
+  }>;
 };
 
 /** `documents.request_reminder` (documents, normal). */
 export type DocumentsRequestReminderData = {
-  requestIds: Array<string>;
-  bookkeeperId?: string;
+  language: string;
+  isReminder?: boolean;
+  requests: Array<{
+    id: string;
+    title: string;
+    type: string;
+  }>;
+};
+
+/** `firm.client_connect_invite` (firm_relations, normal). */
+export type FirmClientConnectInviteData = {
+  connectUrl: string;
+  language?: string;
+};
+
+/** `firm.client_hmrc_removal_notice` (firm_relations, normal). */
+export type FirmClientHmrcRemovalNoticeData = {
+  previousBookkeeperName: string;
+  newBookkeeperName: string;
+  hmrcServices: Array<string>;
+};
+
+/** `firm.client_onboarding_invite` (firm_relations, normal). */
+export type FirmClientOnboardingInviteData = {
+  joinUrl: string;
+  language?: string;
+};
+
+/** `firm.client_transferred_away` (firm_relations, normal). */
+export type FirmClientTransferredAwayData = {
+  clientProfileId: string;
+  newBookkeeperName: string;
+  hmrcServices?: Array<string>;
 };
 
 /** `insights.budget_run_rate_digest` (insights, digestible). */
 export type InsightsBudgetRunRateDigestData = {
-  budgetIds: Array<string>;
+  language: string;
+  items: Array<{
+    budgetName: string;
+  }>;
+  budgetsUrl: string;
+};
+
+/** `internal.plan_subscribed` (internal, normal). */
+export type InternalPlanSubscribedData = {
+  companyName: string;
+  legalName: string;
+  planName: string;
+  priceCents: number;
+  dashboardUrl: string;
+  trialEndsAt: string | unknown;
 };
 
 /** `lifecycle.founder_checkin` (lifecycle_marketing, normal). */
-export type LifecycleFounderCheckinData = Record<string, never>;
+export type LifecycleFounderCheckinData = {
+  language: string;
+  meetingUrl: string;
+  unsubscribeUrl: string;
+  signatureName: string;
+  from: {
+    name: string;
+    email: string;
+  };
+};
 
 /** `lifecycle.onboarding_resume` (lifecycle_marketing, normal). */
 export type LifecycleOnboardingResumeData = {
-  step: string;
+  language: string;
+  copyKey: string;
+  buttonUrl: string;
+  unsubscribeUrl: string;
 };
 
 /** `lifecycle.plan_welcome` (lifecycle_marketing, normal). */
-export type LifecyclePlanWelcomeData = Record<string, never>;
+export type LifecyclePlanWelcomeData = {
+  language: string;
+  companyName: string;
+  planName: string;
+  trialDays: number;
+  trialEndsAt: string | unknown;
+  dashboardUrl: string;
+  firstName?: string | null;
+};
+
+/** `lifecycle.platform_onboarding_invite` (lifecycle_marketing, normal). */
+export type LifecyclePlatformOnboardingInviteData = {
+  inviteUrl: string;
+  contactName?: string | null;
+  message?: string | null;
+  locale?: string;
+};
+
+/** `lifecycle.practice_invoice` (lifecycle_marketing, normal). */
+export type LifecyclePracticeInvoiceData = {
+  profileId: string;
+};
 
 /** `lifecycle.setup_step` (lifecycle_marketing, normal). */
 export type LifecycleSetupStepData = {
-  task: string;
+  language: string;
+  copyKey: string;
+  buttonUrl: string;
+  unsubscribeUrl: string;
+};
+
+/** `payroll.payslip_available` (payroll_correspondence, normal). */
+export type PayrollPayslipAvailableData = {
+  entityId: string;
+  language: string;
+};
+
+/** `payroll.year_document_available` (payroll_correspondence, normal). */
+export type PayrollYearDocumentAvailableData = {
+  entityId: string;
+  language: string;
+};
+
+/** `sales.invoice_payment_failed` (sales_correspondence, normal). */
+export type SalesInvoicePaymentFailedData = {
+  entityId: string;
+};
+
+/** `sales.invoice_payment_received` (sales_correspondence, normal). */
+export type SalesInvoicePaymentReceivedData = {
+  entityId: string;
 };
 
 /** `sales.invoice_sent` (sales_correspondence, normal). */
 export type SalesInvoiceSentData = {
-  salesInvoiceId: string;
-  number: string;
+  entityId: string;
+};
+
+/** `sales.quote_sent` (sales_correspondence, normal). */
+export type SalesQuoteSentData = {
+  entityId: string;
+};
+
+/** `sales.recurring_invoice` (sales_correspondence, normal). */
+export type SalesRecurringInvoiceData = {
+  entityId: string;
 };
 
 /** `sales.reminder_sent` (sales_correspondence, normal). */
 export type SalesReminderSentData = {
-  salesInvoiceId: string;
-  reminderId: string;
-  stage?: number;
+  entityId: string;
 };
 
 /** `tax.deadline_upcoming` (tax_deadlines, normal). */
 export type TaxDeadlineUpcomingData = {
   filingId: string;
-  filingType: string;
-  periodLabel: string;
-  deadline?: string;
-  amountDueMinor?: number;
-  currency?: string;
-  paymentReference?: string;
+  language: string;
   daysLeft: number;
 };
 
 /** `tax.filing_accepted` (tax_deadlines, normal). */
 export type TaxFilingAcceptedData = {
   filingId: string;
-  filingType: string;
-  periodLabel: string;
-  deadline?: string;
-  amountDueMinor?: number;
-  currency?: string;
-  paymentReference?: string;
+  language: string;
 };
 
 /** `tax.filing_ready` (tax_deadlines, critical). */
 export type TaxFilingReadyData = {
   filingId: string;
-  filingType: string;
-  periodLabel: string;
-  deadline?: string;
-  amountDueMinor?: number;
-  currency?: string;
-  paymentReference?: string;
+  language: string;
 };
 
 /** `tax.filing_rejected` (tax_deadlines, critical). */
 export type TaxFilingRejectedData = {
   filingId: string;
-  filingType: string;
-  periodLabel: string;
-  deadline?: string;
-  amountDueMinor?: number;
-  currency?: string;
-  paymentReference?: string;
+  language: string;
   reason?: string;
 };
 
 /** `tax.threshold_approaching` (tax_deadlines, normal). */
 export type TaxThresholdApproachingData = {
-  taxType: string;
-  thresholdMinor: number;
-  currentMinor: number;
-  currency: string;
+  language: string;
+  obligationLabel: string;
+  usedAmount: number;
+  limitAmount: number;
+  taxesUrl: string;
 };
 
 /** `tax.threshold_exceeded` (tax_deadlines, critical). */
 export type TaxThresholdExceededData = {
-  taxType: string;
-  thresholdMinor: number;
-  currentMinor: number;
-  currency: string;
+  language: string;
+  obligationLabel: string;
+  usedAmount: number;
+  limitAmount: number;
+  taxesUrl: string;
 };
 
 export interface MessageDataByType {
+  "account.email_verification": AccountEmailVerificationData;
+  "account.membership_invite": AccountMembershipInviteData;
+  "account.password_reset": AccountPasswordResetData;
   "agents.task_budget_exhausted": AgentsTaskBudgetExhaustedData;
   "agents.task_completed": AgentsTaskCompletedData;
   "agents.task_failed": AgentsTaskFailedData;
   "agents.task_waiting_approval": AgentsTaskWaitingApprovalData;
   "agents.task_waiting_input": AgentsTaskWaitingInputData;
   "approvals.pay_run_ready": ApprovalsPayRunReadyData;
+  "assistant.inbound_reply": AssistantInboundReplyData;
   "banking.lunchflow_consent": BankingLunchflowConsentData;
+  "billing.firm_client_plan_activated": BillingFirmClientPlanActivatedData;
+  "billing.firm_client_plan_cancelled": BillingFirmClientPlanCancelledData;
+  "billing.firm_client_subscription_cancelled": BillingFirmClientSubscriptionCancelledData;
+  "billing.payroll_addon_enabled": BillingPayrollAddonEnabledData;
   "billing.plan_upgrade_request": BillingPlanUpgradeRequestData;
+  "custom.automation_email": CustomAutomationEmailData;
+  "custom.automation_whatsapp": CustomAutomationWhatsappData;
+  "custom.notification": CustomNotificationData;
+  "documents.inbound_unsorted": DocumentsInboundUnsortedData;
   "documents.receipt_missing": DocumentsReceiptMissingData;
   "documents.received_available": DocumentsReceivedAvailableData;
   "documents.request_digest": DocumentsRequestDigestData;
   "documents.request_reminder": DocumentsRequestReminderData;
+  "firm.client_connect_invite": FirmClientConnectInviteData;
+  "firm.client_hmrc_removal_notice": FirmClientHmrcRemovalNoticeData;
+  "firm.client_onboarding_invite": FirmClientOnboardingInviteData;
+  "firm.client_transferred_away": FirmClientTransferredAwayData;
   "insights.budget_run_rate_digest": InsightsBudgetRunRateDigestData;
+  "internal.plan_subscribed": InternalPlanSubscribedData;
   "lifecycle.founder_checkin": LifecycleFounderCheckinData;
   "lifecycle.onboarding_resume": LifecycleOnboardingResumeData;
   "lifecycle.plan_welcome": LifecyclePlanWelcomeData;
+  "lifecycle.platform_onboarding_invite": LifecyclePlatformOnboardingInviteData;
+  "lifecycle.practice_invoice": LifecyclePracticeInvoiceData;
   "lifecycle.setup_step": LifecycleSetupStepData;
+  "payroll.payslip_available": PayrollPayslipAvailableData;
+  "payroll.year_document_available": PayrollYearDocumentAvailableData;
+  "sales.invoice_payment_failed": SalesInvoicePaymentFailedData;
+  "sales.invoice_payment_received": SalesInvoicePaymentReceivedData;
   "sales.invoice_sent": SalesInvoiceSentData;
+  "sales.quote_sent": SalesQuoteSentData;
+  "sales.recurring_invoice": SalesRecurringInvoiceData;
   "sales.reminder_sent": SalesReminderSentData;
   "tax.deadline_upcoming": TaxDeadlineUpcomingData;
   "tax.filing_accepted": TaxFilingAcceptedData;

@@ -45,7 +45,11 @@ import {
   Upserts,
   WebhookEndpoints,
 } from './data.js';
+import { CustomDomains, DocumentFonts, DocumentLayouts, DocumentRendering, DocumentTemplates } from './document-control.js';
+import { Extensions } from './extensions.js';
 import { Messages } from './messages.js';
+import { PaymentLinks, PaymentRequests, Providers, StepUp, TaxReservation } from './payments.js';
+import { Policies } from './policies.js';
 
 type Role = 'admin' | 'member' | 'viewer';
 
@@ -334,6 +338,22 @@ export class PlatformNamespace {
   readonly events: Events;
   readonly webhookEndpoints: WebhookEndpoints;
   readonly messages: Messages;
+  /** Delegated actions (Wave 4.5). */
+  readonly providers: Providers;
+  readonly paymentRequests: PaymentRequests;
+  readonly paymentLinks: PaymentLinks;
+  readonly taxReservation: TaxReservation;
+  readonly stepUp: StepUp;
+  /** Policies (Wave 4.6). */
+  readonly policies: Policies;
+  /** Custom actions, slots, links, custom fields and field control (Wave 4.7). */
+  readonly extensions: Extensions;
+  /** Document layouts, templates, partner rendering, fonts and custom domains (Wave 4.3, 4.4). */
+  readonly documentLayouts: DocumentLayouts;
+  readonly documentTemplates: DocumentTemplates;
+  readonly documentRendering: DocumentRendering;
+  readonly documentFonts: DocumentFonts;
+  readonly customDomains: CustomDomains;
   readonly reports: Reports;
   readonly documents: Documents;
   readonly exports: Exports;
@@ -356,6 +376,18 @@ export class PlatformNamespace {
     this.events = new Events(http);
     this.webhookEndpoints = new WebhookEndpoints(http);
     this.messages = new Messages(http);
+    this.providers = new Providers(http);
+    this.paymentRequests = new PaymentRequests(http);
+    this.paymentLinks = new PaymentLinks(http);
+    this.taxReservation = new TaxReservation(http);
+    this.stepUp = new StepUp(http);
+    this.policies = new Policies(http);
+    this.extensions = new Extensions(http);
+    this.documentLayouts = new DocumentLayouts(http);
+    this.documentTemplates = new DocumentTemplates(http);
+    this.documentRendering = new DocumentRendering(http);
+    this.documentFonts = new DocumentFonts(http);
+    this.customDomains = new CustomDomains(http);
     this.reports = new Reports(http);
     this.documents = new Documents(http);
     this.exports = new Exports(http);

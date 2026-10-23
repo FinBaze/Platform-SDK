@@ -73,7 +73,7 @@ describe('platform.messages', () => {
           object: 'message',
           id: 'msg_1',
           type: 'tax.filing_ready',
-          data: { filingId: 'f1', filingType: 'nl_vat', periodLabel: 'Q3' },
+          data: { filingId: 'f1', filingType: 'nl_vat', language: 'nl' },
           ack_required: true,
         },
       },
@@ -84,8 +84,8 @@ describe('platform.messages', () => {
     const created: MessageCreatedEvent | typeof event = event;
     const message = created.data.object;
     if (message.type === 'tax.filing_ready') {
-      // Narrowed: `periodLabel` is typed on this branch.
-      expect(message.data.periodLabel).toBe('Q3');
+      // Narrowed: `language` is typed on this branch.
+      expect(message.data.language).toBe('nl');
     } else {
       throw new Error('expected tax.filing_ready');
     }

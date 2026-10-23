@@ -1,0 +1,137 @@
+# Delegated actions (Wave 4.5): providers, payment requests, payment links, tax reservation, step-up.
+
+fragment SdkPaymentRequestFields on PaymentRequest {
+  id
+  companyId
+  kind
+  status
+  amountMinor
+  currency
+  dueDate
+  endToEndId
+  taxFilingId
+  paymentBatchId
+  pain001Url
+  partnerReference
+  paidAt
+  created
+  lines {
+    id
+    creditorName
+    iban
+    bic
+    amountMinor
+    currency
+    remittance
+    structuredReference
+    endToEndId
+    paid
+  }
+}
+
+query SdkPlatformProviders {
+  platformProviders {
+    id
+    action
+    mode
+    config
+    enabled
+  }
+}
+
+mutation SdkUpsertPlatformProvider($input: UpsertPlatformProviderInput!) {
+  upsertPlatformProvider(input: $input) {
+    id
+    action
+    mode
+    config
+    enabled
+  }
+}
+
+query SdkPaymentRequests($company: CompanyRef, $status: [PaymentRequestStatus!], $first: Int, $after: String) {
+  paymentRequests(company: $company, status: $status, first: $first, after: $after) {
+    items {
+      ...SdkPaymentRequestFields
+    }
+    nextCursor
+  }
+}
+
+query SdkPaymentRequest($id: ID!) {
+  paymentRequest(id: $id) {
+    ...SdkPaymentRequestFields
+  }
+}
+
+mutation SdkCreateTaxPaymentRequest($company: CompanyRef!, $taxFilingId: ID!) {
+  createTaxPaymentRequest(company: $company, taxFilingId: $taxFilingId) {
+    ...SdkPaymentRequestFields
+  }
+}
+
+mutation SdkCreatePaymentRequestFromBatch($company: CompanyRef!, $paymentBatchId: ID!) {
+  createPaymentRequestFromBatch(company: $company, paymentBatchId: $paymentBatchId) {
+    ...SdkPaymentRequestFields
+  }
+}
+
+mutation SdkReportPaymentRequestStatus($input: ReportPaymentRequestStatusInput!) {
+  reportPaymentRequestStatus(input: $input) {
+    ...SdkPaymentRequestFields
+  }
+}
+
+mutation SdkCancelPaymentRequest($id: ID!) {
+  cancelPaymentRequest(id: $id) {
+    ...SdkPaymentRequestFields
+  }
+}
+
+mutation SdkProvidePaymentLink($requestId: ID!, $url: String!, $expiresAt: DateTime) {
+  providePaymentLink(requestId: $requestId, url: $url, expiresAt: $expiresAt) {
+    id
+    salesInvoiceId
+    amountMinor
+    currency
+    status
+    url
+    expiresAt
+    deadline
+  }
+}
+
+query SdkTaxReservationAdvice($company: CompanyRef!) {
+  taxReservationAdvice(company: $company) {
+    id
+    companyId
+    taxType
+    periodLabel
+    periodEnd
+    amountMinor
+    currency
+    basis
+    status
+    reportedReservedMinor
+    created
+  }
+}
+
+mutation SdkReportTaxReservation($adviceId: ID!, $reservedMinor: Int!, $accountRef: String) {
+  reportTaxReservation(adviceId: $adviceId, reservedMinor: $reservedMinor, accountRef: $accountRef) {
+    id
+    status
+    reportedReservedMinor
+  }
+}
+
+query SdkStepUpChallenge($id: ID!) {
+  stepUpChallenge(id: $id) {
+    id
+    action
+    summary
+    nonce
+    status
+    expiresAt
+  }
+}

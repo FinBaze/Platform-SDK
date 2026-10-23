@@ -7,6 +7,15 @@ Wave 4.1: messages.
 - **`platform.messages.*`.** `list` (offset paging), `acknowledge`, `acknowledgeMany`, `markRead`, `resend`, `catalogue`, `routing.list/set/clear` and `settings.retrieve/update`.
 - **Message events.** `MessageCreatedEvent`, `MessageUnacknowledgedEvent` and `isMessageEvent`; `message.type` narrows `message.data` to the type's payload (`MessageData<'tax.filing_ready'>`), generated from the catalogue by `scripts/generate-message-types.ts`.
 
+Wave 4: control surfaces.
+
+- **Delegated actions.** `platform.providers`, `platform.paymentRequests` (list, retrieve, create for a tax filing or batch, report status, cancel), `platform.paymentLinks.provide`, `platform.taxReservation` and `platform.stepUp`. `signStepUp` signs the `FinBaze-Step-Up` assertion (ES256, EdDSA, RS256; Node only).
+- **Policies.** `platform.policies`: schemas, list, `createDraft`, `activate`, `effective`, company `overrides` and sandbox to production `bundle` (`export`, `preview`, `confirm`).
+- **Extensions.** `platform.extensions`: `customActions`, `slots`, `linkTemplates`, `customFields` and `fieldControl`.
+- **Documents.** `platform.documentLayouts` (presets), `documentTemplates`, `documentRendering` (settings, jobs, `attach` by base64 or `uploadId`, `upload`), `documentFonts` (including `upload`) and `customDomains`.
+- **Messaging extras.** `platform.messages.copy`, `senderDomains` and `notifications`; message types regenerated from the current catalogue (50 types).
+- **Events.** `PlatformControlEvent` and `isControlEvent` cover `payment_request.*`, `payment_link.requested`, `tax_reservation.advised`, `step_up.required`, `document.render_*`, `document.official_copy_created`, `custom_domain.status_changed`, `custom_action.invoked`, `policy.activated` and `quota.reached`.
+
 ## 1.1.0
 
 Wave 3: data in and out.

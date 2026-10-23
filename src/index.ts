@@ -34,3 +34,25 @@ export type {
   PlatformMessageEvent,
 } from './messages.js';
 export type { AcknowledgeParams, MessageListParams, MessageSettingsParams, SetRoutingParams } from './resources/platform/messages.js';
+
+export { isControlEvent } from './control-events.js';
+export type {
+  CustomActionInvokedEvent,
+  CustomDomainStatusChangedEvent,
+  DocumentOfficialCopyCreatedEvent,
+  DocumentRenderFailedEvent,
+  DocumentRenderRejectedEvent,
+  DocumentRenderRequestedEvent,
+  PaymentLinkRequestedEvent,
+  PaymentRequestCreatedEvent,
+  PaymentRequestEventObject,
+  PaymentRequestPaidEvent,
+  PaymentRequestUpdatedEvent,
+  PlatformControlEvent,
+  PolicyActivatedEvent,
+  QuotaReachedEvent,
+  StepUpRequiredEvent,
+  TaxReservationAdvisedEvent,
+} from './control-events.js';
+export { signStepUp } from './step-up.js';
+export type { SignStepUpParams, StepUpAlgorithm, StepUpChallengeInput } from './step-up.js';

@@ -1,0 +1,116 @@
+# Messaging extras (Wave 4.2): your sender domains and copy overrides, and the notification centre.
+
+fragment SdkSenderDomainFields on PlatformSenderDomain {
+  id
+  domain
+  fromLocalPart
+  status
+  lastError
+  lastCheckedAt
+  verifiedAt
+  dnsRecords {
+    type
+    name
+    value
+    purpose
+  }
+}
+
+query SdkPlatformSenderDomains {
+  platformSenderDomains {
+    ...SdkSenderDomainFields
+  }
+}
+
+mutation SdkCreatePlatformSenderDomain($input: CreatePlatformSenderDomainInput!) {
+  createPlatformSenderDomain(input: $input) {
+    ...SdkSenderDomainFields
+  }
+}
+
+mutation SdkVerifyPlatformSenderDomain($id: ID!) {
+  verifyPlatformSenderDomain(id: $id) {
+    ...SdkSenderDomainFields
+  }
+}
+
+mutation SdkDisablePlatformSenderDomain($id: ID!) {
+  disablePlatformSenderDomain(id: $id) {
+    ...SdkSenderDomainFields
+  }
+}
+
+query SdkPlatformMessageCopy($type: String) {
+  platformMessageCopy(type: $type) {
+    id
+    type
+    locale
+    variant
+    template
+    version
+  }
+}
+
+query SdkPreviewPlatformMessageCopy($type: String!, $variant: String!, $template: String!, $data: JSONObject!) {
+  previewPlatformMessageCopy(type: $type, variant: $variant, template: $template, data: $data) {
+    text
+    problems
+  }
+}
+
+mutation SdkSetPlatformMessageCopy($input: SetPlatformMessageCopyInput!) {
+  setPlatformMessageCopy(input: $input) {
+    id
+    type
+    locale
+    variant
+    template
+    version
+  }
+}
+
+mutation SdkClearPlatformMessageCopy($id: ID!) {
+  clearPlatformMessageCopy(id: $id)
+}
+
+query SdkMyNotifications($companyId: ID, $unreadOnly: Boolean, $first: Int, $after: String) {
+  myNotifications(companyId: $companyId, unreadOnly: $unreadOnly, first: $first, after: $after) {
+    unreadCount
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        id
+        type
+        category
+        priority
+        title
+        body
+        ctaLabel
+        severity
+        deepLink
+        companyId
+        readAt
+        created
+      }
+    }
+  }
+}
+
+mutation SdkMarkNotificationsRead($ids: [ID!], $all: Boolean, $companyId: ID) {
+  markNotificationsRead(ids: $ids, all: $all, companyId: $companyId)
+}
+
+mutation SdkSetNotificationPreference($input: SetNotificationPreferenceInput!) {
+  setNotificationPreference(input: $input) {
+    category
+    channel
+    enabled
+    digest
+    companyId
+    locked
+  }
+}
