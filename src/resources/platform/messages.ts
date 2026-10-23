@@ -7,6 +7,7 @@ import {
   SdkPlatformMessageRoutingDocument,
   SdkPlatformMessageSettingsDocument,
   SdkPlatformMessagesDocument,
+  SdkResendPlatformMessageDocument,
   SdkSetPlatformMessageRoutingDocument,
   SdkUpdatePlatformMessageSettingsDocument,
 } from '../../generated/graphql.js';
@@ -113,6 +114,11 @@ export class Messages {
   /** Up to 100 at once. */
   async acknowledgeMany(params: AcknowledgeParams[]) {
     return (await this.http.request(SdkAcknowledgeMessagesDocument, { inputs: params.map(toInput) })).acknowledgeMessages;
+  }
+
+  /** Sends `message.created` again for a message routed to you, for example after a lost webhook. */
+  async resend(id: string) {
+    return (await this.http.request(SdkResendPlatformMessageDocument, { id })).resendPlatformMessage;
   }
 
   /** The user saw it. */

@@ -43,6 +43,12 @@ describe('platform.messages', () => {
     expect(vars(api(s.calls)[1]!).inputs).toEqual([{ id: 'm1', channel: 'email', outcome: 'failed' }]);
   });
 
+  it('resends a message', async () => {
+    const s = server(() => ({ resendPlatformMessage: message('m1') }));
+    expect((await client(s).platform.messages.resend('m1')).id).toBe('m1');
+    expect(vars(api(s.calls)[0]!)).toEqual({ id: 'm1' });
+  });
+
   it('sets routing for a type, company-specific, and updates settings with quiet hours', async () => {
     const s = server(() => ({ setPlatformMessageRouting: { id: 'r1' }, updatePlatformMessageSettings: { digestHourLocal: 8 } }));
     await client(s).platform.messages.routing.set({ scope: 'type', type: 'tax.filing_ready', routing: 'both', company: 'c1' });

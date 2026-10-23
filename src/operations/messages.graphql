@@ -77,6 +77,12 @@ mutation SdkMarkMessageRead($id: ID!) {
   }
 }
 
+mutation SdkResendPlatformMessage($id: ID!) {
+  resendPlatformMessage(id: $id) {
+    ...SdkMessageFields
+  }
+}
+
 query SdkPlatformMessageRouting($profileId: ID) {
   platformMessageRouting(profileId: $profileId) {
     ...SdkMessageRoutingRuleFields

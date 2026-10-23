@@ -4,7 +4,7 @@
 
 Wave 4.1: messages.
 
-- **`platform.messages.*`.** `list` (offset paging), `acknowledge`, `acknowledgeMany`, `markRead`, `catalogue`, `routing.list/set/clear` and `settings.retrieve/update`.
+- **`platform.messages.*`.** `list` (offset paging), `acknowledge`, `acknowledgeMany`, `markRead`, `resend`, `catalogue`, `routing.list/set/clear` and `settings.retrieve/update`.
 - **Message events.** `MessageCreatedEvent`, `MessageUnacknowledgedEvent` and `isMessageEvent`; `message.type` narrows `message.data` to the type's payload (`MessageData<'tax.filing_ready'>`), generated from the catalogue by `scripts/generate-message-types.ts`.
 
 ## 1.1.0
