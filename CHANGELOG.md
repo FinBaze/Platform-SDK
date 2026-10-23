@@ -9,6 +9,11 @@ Wave 5.1: filing consent.
 - **Messages.** The type `tax_authorisation.revoked` (`MessageData<'tax_authorisation.revoked'>`): FinBaze sends nothing itself, route it like any other.
 - **Embed sessions.** `components.onboarding.features.filingConsent`, `components.taxAuthorisation.features.grant` and `inlineConsent` on `vatReturn`, `icpReturn` and `ossReturn`.
 
+Wave 5.3: accountants on platform companies.
+
+- **`platform.firms.*`.** `listEngagements(companyId, { includeEnded })` and `end(engagementId, { reason })` (scopes `platform_firms:read` and `platform_firms:write`; a platform may end with `firm_access_hidden`, `company_closed`, `company_transferred` or `platform_request`).
+- **Firm events.** `PlatformFirmEvent` and `isFirmEvent` cover `firm.access_requested`, `firm.connection_requested`, `firm.connected`, `firm.connection_declined`, `firm.connection_expired`, `firm.disconnect_scheduled`, `firm.disconnected` and `firm.authority_changed`. The embed component `accountant-connect` emits `firm.connected` and `firm.disconnected`.
+
 Wave 4.1: messages.
 
 - **`platform.messages.*`.** `list` (offset paging), `acknowledge`, `acknowledgeMany`, `markRead`, `resend`, `catalogue`, `routing.list/set/clear` and `settings.retrieve/update`.

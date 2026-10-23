@@ -47,6 +47,7 @@ import {
 } from './data.js';
 import { CustomDomains, DocumentFonts, DocumentLayouts, DocumentRendering, DocumentTemplates } from './document-control.js';
 import { Extensions } from './extensions.js';
+import { Firms } from './firms.js';
 import { Messages } from './messages.js';
 import { PaymentLinks, PaymentRequests, Providers, StepUp, TaxReservation } from './payments.js';
 import { Policies } from './policies.js';
@@ -360,6 +361,8 @@ export class PlatformNamespace {
   readonly reports: Reports;
   readonly documents: Documents;
   readonly exports: Exports;
+  /** Accounting firms on your companies (Wave 5.3). */
+  readonly firms: Firms;
 
   constructor(http: FinbazeHttpClient) {
     this.companies = new Companies(http);
@@ -395,5 +398,6 @@ export class PlatformNamespace {
     this.reports = new Reports(http);
     this.documents = new Documents(http);
     this.exports = new Exports(http);
+    this.firms = new Firms(http);
   }
 }
