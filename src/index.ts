@@ -54,5 +54,26 @@ export type {
   StepUpRequiredEvent,
   TaxReservationAdvisedEvent,
 } from './control-events.js';
+export { isFirmEvent } from './firm-events.js';
+export type {
+  FirmAccessRequestedEvent,
+  FirmAuthorityChangedEvent,
+  FirmConnectedEvent,
+  FirmConnectionDeclinedEvent,
+  FirmConnectionExpiredEvent,
+  FirmConnectionRequestedEvent,
+  FirmDisconnectScheduledEvent,
+  FirmDisconnectedEvent,
+  FirmEngagementEventObject,
+  PlatformFirmEvent,
+} from './firm-events.js';
+export type {
+  AuthorisedTax,
+  EngagementSide,
+  FirmEngagement,
+  FirmEngagementOrigin,
+  FirmEngagementStatus,
+  PlatformEndReason,
+} from './resources/platform/firms.js';
 export { signStepUp } from './step-up.js';
 export type { SignStepUpParams, StepUpAlgorithm, StepUpChallengeInput } from './step-up.js';
