@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+Wave 5.4: lifecycle, deprovisioning and the audit log.
+
+- **`platform.companies`.** `suspend`, `reactivate`, `close`, `reopen`, `archive` and `closingChecklist`; companies carry a `lifecycle` (`state`, `suspendedBy`, `displayMessage`, `closeEffectiveDate`, `retentionUntil`). `list` hides archived companies unless you pass `includeArchived` or `lifecycleStates`.
+- **`platform.transfers`.** `statement`, `list`, `cancel` and, on the receiving platform, `accept(code, externalId)`. The company admin consents in the embedded `company-transfer` element.
+- **`platform.users.deprovision`.** Ends a user's tokens and embed sessions at once; `upsert` with the same `externalUserId` brings the user back.
+- **`platform.audit`.** `list` (keyset pages, `nextCursor`), `iterate` and `export` over the audit log with platform context (token type, IP, request id, step-up assertion). Needs the `audit:read` scope and an admin role.
+
 Wave 4.1: messages.
 
 - **`platform.messages.*`.** `list` (offset paging), `acknowledge`, `acknowledgeMany`, `markRead`, `resend`, `catalogue`, `routing.list/set/clear` and `settings.retrieve/update`.

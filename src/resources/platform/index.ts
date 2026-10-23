@@ -1,5 +1,12 @@
 import {
   SdkAddPlatformAllowedOriginDocument,
+  SdkArchivePlatformCompanyDocument,
+  SdkClosePlatformCompanyDocument,
+  SdkCompanyClosingChecklistDocument,
+  SdkDeprovisionPlatformUserDocument,
+  SdkReactivatePlatformCompanyDocument,
+  SdkReopenPlatformCompanyDocument,
+  SdkSuspendPlatformCompanyDocument,
   SdkCreateEmbedSessionDocument,
   SdkCreatePlatformCompanyDocument,
   SdkCreatePlatformUserTokenDocument,
@@ -27,6 +34,7 @@ import {
   type CreatePlatformCompanyInput,
   type EmbedSessionFilterInput,
   type PlatformCompanyFilter,
+  type ProfileLifecycleState,
   type UpdatePlatformCompanyInput,
 } from '../../generated/graphql.js';
 import type { FinbazeHttpClient, RequestOptions } from '../../http.js';
@@ -47,6 +55,7 @@ import {
 } from './data.js';
 import { CustomDomains, DocumentFonts, DocumentLayouts, DocumentRendering, DocumentTemplates } from './document-control.js';
 import { Extensions } from './extensions.js';
+import { AuditLogs, Transfers } from './lifecycle.js';
 import { Messages } from './messages.js';
 import { PaymentLinks, PaymentRequests, Providers, StepUp, TaxReservation } from './payments.js';
 import { Policies } from './policies.js';
@@ -122,9 +131,16 @@ class Companies {
     return data.updatePlatformCompany;
   }
 
-  list(params?: ListParams<PlatformCompanyFilter>) {
+  /** Archived companies are left out unless `includeArchived` is set or `lifecycleStates` names `archived`. */
+  list(params?: ListParams<PlatformCompanyFilter> & { lifecycleStates?: ProfileLifecycleState[]; includeArchived?: boolean }) {
     return paged(params, async (first, after) => {
-      const data = await this.http.request(SdkPlatformCompaniesDocument, { first, after, filter: params?.filter });
+      const data = await this.http.request(SdkPlatformCompaniesDocument, {
+        first,
+        after,
+        filter: params?.filter,
+        lifecycleStates: params?.lifecycleStates,
+        includeArchived: params?.includeArchived,
+      });
       return data.platformCompanies;
     });
   }
@@ -132,6 +148,44 @@ class Companies {
   async requirements(id: string) {
     const data = await this.http.request(SdkOnboardingRequirementsDocument, { profileId: id });
     return data.onboardingRequirements;
+  }
+
+  /**
+   * Makes the company read-only and pauses its automations (cron work, filings stay as they are).
+   * `displayMessage` is shown to the company's users. A company FinBaze suspended cannot be reactivated by you.
+   */
+  async suspend(id: string, params?: { reason?: string; displayMessage?: string }, options?: RequestOptions) {
+    const data = await this.http.request(SdkSuspendPlatformCompanyDocument, { companyId: id, ...params }, undefined, options);
+    return data.suspendPlatformCompany;
+  }
+
+  async reactivate(id: string, options?: RequestOptions) {
+    const data = await this.http.request(SdkReactivatePlatformCompanyDocument, { companyId: id }, undefined, options);
+    return data.reactivatePlatformCompany;
+  }
+
+  /** Closes the company as of `effectiveDate` (YYYY-MM-DD). Final returns can still be filed. */
+  async close(id: string, params: { effectiveDate: string; reason?: string }, options?: RequestOptions) {
+    const data = await this.http.request(SdkClosePlatformCompanyDocument, { companyId: id, ...params }, undefined, options);
+    return data.closePlatformCompany;
+  }
+
+  /** Within the reopen window after closing. */
+  async reopen(id: string, options?: RequestOptions) {
+    const data = await this.http.request(SdkReopenPlatformCompanyDocument, { companyId: id }, undefined, options);
+    return data.reopenPlatformCompany;
+  }
+
+  /** Detaches a closed company from your platform. The books are kept for the retention period; archived companies are hidden from `list` unless you ask for them. */
+  async archive(id: string, options?: RequestOptions) {
+    const data = await this.http.request(SdkArchivePlatformCompanyDocument, { companyId: id }, undefined, options);
+    return data.archivePlatformCompany;
+  }
+
+  /** What closing needs (blocking items stop `archive`). Pass `effectiveDate` to preview for an active company. */
+  async closingChecklist(id: string, effectiveDate?: string) {
+    const data = await this.http.request(SdkCompanyClosingChecklistDocument, { companyId: id, effectiveDate });
+    return data.companyClosingChecklist;
   }
 }
 
@@ -169,6 +223,16 @@ class Users {
       options,
     );
     return data.setPlatformUserAccess;
+  }
+
+  /**
+   * Ends a user: every token and embed session stops working at once, and the user loses access to all
+   * companies. `upsert` with the same `externalUserId` brings the user back with a fresh identity.
+   * `anonymise` also clears the name.
+   */
+  async deprovision(id: string, params?: { anonymise?: boolean }, options?: RequestOptions) {
+    const data = await this.http.request(SdkDeprovisionPlatformUserDocument, { userId: id, anonymise: params?.anonymise ?? false }, undefined, options);
+    return data.deprovisionPlatformUser;
   }
 
   /** Also revokes the user's embed sessions for that company. */
@@ -357,6 +421,10 @@ export class PlatformNamespace {
   readonly reports: Reports;
   readonly documents: Documents;
   readonly exports: Exports;
+  /** Moving companies to another platform or to FinBaze (Wave 5.4). */
+  readonly transfers: Transfers;
+  /** The audit log of your companies, with platform context (Wave 5.4). */
+  readonly audit: AuditLogs;
 
   constructor(http: FinbazeHttpClient) {
     this.companies = new Companies(http);
@@ -391,5 +459,7 @@ export class PlatformNamespace {
     this.reports = new Reports(http);
     this.documents = new Documents(http);
     this.exports = new Exports(http);
+    this.transfers = new Transfers(http);
+    this.audit = new AuditLogs(http);
   }
 }

@@ -11,6 +11,15 @@ fragment SdkPlatformCompanyFields on PlatformCompany {
   language
   created
   updated
+  lifecycle {
+    state
+    changedAt
+    suspendedBy
+    displayMessage
+    closeEffectiveDate
+    archivedAt
+    retentionUntil
+  }
 }
 
 fragment SdkPlatformUserFields on PlatformUser {
@@ -73,8 +82,8 @@ query SdkPlatformCompany($profileId: ID, $externalId: String) {
   }
 }
 
-query SdkPlatformCompanies($first: Int!, $after: String, $filter: PlatformCompanyFilter) {
-  platformCompanies(first: $first, after: $after, filter: $filter) {
+query SdkPlatformCompanies($first: Int!, $after: String, $filter: PlatformCompanyFilter, $lifecycleStates: [ProfileLifecycleState!], $includeArchived: Boolean) {
+  platformCompanies(first: $first, after: $after, filter: $filter, lifecycleStates: $lifecycleStates, includeArchived: $includeArchived) {
     hasMore
     nextCursor
     edges {
