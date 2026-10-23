@@ -14,6 +14,13 @@ Wave 5.3: accountants on platform companies.
 - **`platform.firms.*`.** `listEngagements(companyId, { includeEnded })` and `end(engagementId, { reason })` (scopes `platform_firms:read` and `platform_firms:write`; a platform may end with `firm_access_hidden`, `company_closed`, `company_transferred` or `platform_request`).
 - **Firm events.** `PlatformFirmEvent` and `isFirmEvent` cover `firm.access_requested`, `firm.connection_requested`, `firm.connected`, `firm.connection_declined`, `firm.connection_expired`, `firm.disconnect_scheduled`, `firm.disconnected` and `firm.authority_changed`. The embed component `accountant-connect` emits `firm.connected` and `firm.disconnected`.
 
+Wave 5.4: lifecycle, deprovisioning and the audit log.
+
+- **`platform.companies`.** `suspend`, `reactivate`, `close`, `reopen`, `archive` and `closingChecklist`; companies carry a `lifecycle` (`state`, `suspendedBy`, `displayMessage`, `closeEffectiveDate`, `retentionUntil`). `list` hides archived companies unless you pass `includeArchived` or `lifecycleStates`.
+- **`platform.transfers`.** `statement`, `list`, `cancel` and, on the receiving platform, `accept(code, externalId)`. The company admin consents in the embedded `company-transfer` element.
+- **`platform.users.deprovision`.** Ends a user's tokens and embed sessions at once; `upsert` with the same `externalUserId` brings the user back.
+- **`platform.audit`.** `list` (keyset pages, `nextCursor`), `iterate` and `export` over the audit log with platform context (token type, IP, request id, step-up assertion). Needs the `audit:read` scope and an admin role.
+
 Wave 4.1: messages.
 
 - **`platform.messages.*`.** `list` (offset paging), `acknowledge`, `acknowledgeMany`, `markRead`, `resend`, `catalogue`, `routing.list/set/clear` and `settings.retrieve/update`.

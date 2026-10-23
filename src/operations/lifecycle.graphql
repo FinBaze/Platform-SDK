@@ -1,0 +1,135 @@
+fragment SdkCompanyLifecycleFields on CompanyLifecycle {
+  state
+  changedAt
+  suspendedBy
+  displayMessage
+  closeEffectiveDate
+  archivedAt
+  retentionUntil
+}
+
+fragment SdkLifecycleCompanyFields on PlatformCompany {
+  id
+  platformId
+  externalId
+  legalName
+  lifecycle {
+    ...SdkCompanyLifecycleFields
+  }
+}
+
+fragment SdkCompanyTransferFields on CompanyTransfer {
+  id
+  companyId
+  target
+  status
+  expiresAt
+  completedAt
+}
+
+mutation SdkSuspendPlatformCompany($companyId: ID!, $reason: String, $displayMessage: String) {
+  suspendPlatformCompany(companyId: $companyId, reason: $reason, displayMessage: $displayMessage) {
+    ...SdkLifecycleCompanyFields
+  }
+}
+
+mutation SdkReactivatePlatformCompany($companyId: ID!) {
+  reactivatePlatformCompany(companyId: $companyId) {
+    ...SdkLifecycleCompanyFields
+  }
+}
+
+mutation SdkClosePlatformCompany($companyId: ID!, $effectiveDate: String!, $reason: String) {
+  closePlatformCompany(companyId: $companyId, effectiveDate: $effectiveDate, reason: $reason) {
+    ...SdkLifecycleCompanyFields
+  }
+}
+
+mutation SdkReopenPlatformCompany($companyId: ID!) {
+  reopenPlatformCompany(companyId: $companyId) {
+    ...SdkLifecycleCompanyFields
+  }
+}
+
+mutation SdkArchivePlatformCompany($companyId: ID!) {
+  archivePlatformCompany(companyId: $companyId) {
+    ...SdkLifecycleCompanyFields
+  }
+}
+
+query SdkCompanyClosingChecklist($companyId: ID!, $effectiveDate: String) {
+  companyClosingChecklist(companyId: $companyId, effectiveDate: $effectiveDate) {
+    key
+    label
+    blocking
+    done
+    filingId
+  }
+}
+
+query SdkCompanyTransferStatement($companyId: ID!, $target: CompanyTransferTarget!, $locale: String) {
+  companyTransferStatement(companyId: $companyId, target: $target, locale: $locale) {
+    version
+    locale
+    target
+    title
+    paragraphs
+    hash
+  }
+}
+
+query SdkCompanyTransfers($companyId: ID!) {
+  companyTransfers(companyId: $companyId) {
+    ...SdkCompanyTransferFields
+  }
+}
+
+mutation SdkCancelCompanyTransfer($transferId: ID!) {
+  cancelCompanyTransfer(transferId: $transferId) {
+    ...SdkCompanyTransferFields
+  }
+}
+
+mutation SdkAcceptCompanyTransfer($code: String!, $externalId: String) {
+  acceptCompanyTransfer(code: $code, externalId: $externalId) {
+    ...SdkLifecycleCompanyFields
+  }
+}
+
+mutation SdkDeprovisionPlatformUser($userId: ID!, $anonymise: Boolean) {
+  deprovisionPlatformUser(userId: $userId, anonymise: $anonymise)
+}
+
+query SdkPlatformAuditLogs($filter: PlatformAuditLogFilter, $first: Int, $after: String) {
+  platformAuditLogs(filter: $filter, first: $first, after: $after) {
+    nextCursor
+    edges {
+      id
+      at
+      companyId
+      action
+      actorKind
+      platformUserId
+      platformUserExternalId
+      actorLabel
+      tokenType
+      ip
+      userAgent
+      stepUpAssertionId
+      supportGrantId
+      requestId
+      targetType
+      targetId
+      metadata
+    }
+  }
+}
+
+mutation SdkRequestAuditLogExport($filter: PlatformAuditLogFilter) {
+  requestAuditLogExport(filter: $filter) {
+    id
+    kind
+    status
+    runDate
+  }
+}
