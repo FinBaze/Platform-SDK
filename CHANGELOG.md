@@ -21,6 +21,13 @@ Wave 5.4: lifecycle, deprovisioning and the audit log.
 - **`platform.users.deprovision`.** Ends a user's tokens and embed sessions at once; `upsert` with the same `externalUserId` brings the user back.
 - **`platform.audit`.** `list` (keyset pages, `nextCursor`), `iterate` and `export` over the audit log with platform context (token type, IP, request id, step-up assertion). Needs the `audit:read` scope and an admin role.
 
+Wave 5.5: support and sandbox.
+
+- **`platform.support`.** `settings.retrieve/update` (`supportMode` `partner_first` or `finbaze_direct`, `supportUrl`, `supportEmail`, `supportEscalationEnabled`), `escalations.list/create/comment` (scopes `support:read`, `support:write`) and `grants.list/decide/revoke` for FinBaze view-as. A server-key `decide` with `approve: true` needs an `attestation` saying how you obtained the company's consent.
+- **`platform.sandbox`.** `testClocks.list/create/advance/delete`, `seedTestCompany`, `resetSandbox` and `settings.retrieve/update`.
+- **Events.** `SupportRequestedEvent`, `SupportEscalationCreatedEvent`, `SupportEscalationUpdatedEvent`, `SupportAccessRequestedEvent`, `SupportAccessGrantedEvent`, `SupportAccessRevokedEvent`, `SupportAccessExpiredEvent` and `SupportBreakGlassEvent` join `PlatformControlEvent`.
+- **Embed sessions.** `components.contactSupport`, `components.supportAccess` (`features.decide`, `features.revoke`) and `notificationBanner.features.supportApproval`. The browser SDK opens the platform's `supportUrl` when a page has no `support.requested` handler.
+
 Wave 4.1: messages.
 
 - **`platform.messages.*`.** `list` (offset paging), `acknowledge`, `acknowledgeMany`, `markRead`, `resend`, `catalogue`, `routing.list/set/clear` and `settings.retrieve/update`.

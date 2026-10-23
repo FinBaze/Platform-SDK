@@ -60,6 +60,8 @@ import { AuditLogs, Transfers } from './lifecycle.js';
 import { Messages } from './messages.js';
 import { PaymentLinks, PaymentRequests, Providers, StepUp, TaxReservation } from './payments.js';
 import { Policies } from './policies.js';
+import { Sandbox } from './sandbox.js';
+import { Support } from './support.js';
 import { TaxAuthorisations } from './tax-authorisations.js';
 
 type Role = 'admin' | 'member' | 'viewer';
@@ -87,7 +89,7 @@ export type CreateEmbedSessionParams = {
   components: {
     onboarding?: { enabled?: boolean; features?: { editCompany?: boolean; taxSetup?: boolean; filingConsent?: boolean } };
     taxAuthorisation?: { enabled?: boolean; features?: { revoke?: boolean; hmrcConnect?: boolean; grant?: boolean } };
-    notificationBanner?: { enabled?: boolean };
+    notificationBanner?: { enabled?: boolean; features?: { supportApproval?: boolean } };
     actionCentre?: { enabled?: boolean };
     transactions?: { enabled?: boolean; features?: { categorise?: boolean; split?: boolean; attachReceipt?: boolean; matchInvoices?: boolean; aiSuggestions?: boolean } };
     transactionDetail?: { enabled?: boolean; features?: { categorise?: boolean; split?: boolean; attachReceipt?: boolean; matchInvoices?: boolean; aiSuggestions?: boolean } };
@@ -100,6 +102,8 @@ export type CreateEmbedSessionParams = {
     bookingChip?: { enabled?: boolean; features?: { edit?: boolean } };
     receiptButton?: { enabled?: boolean };
     taxDueChip?: { enabled?: boolean };
+    contactSupport?: { enabled?: boolean };
+    supportAccess?: { enabled?: boolean; features?: { decide?: boolean; revoke?: boolean } };
   };
   kind?: 'embed' | 'headless';
   /** One of the platform's allowed origins; the session then only works there. */
@@ -431,6 +435,10 @@ export class PlatformNamespace {
   readonly transfers: Transfers;
   /** The audit log of your companies, with platform context (Wave 5.4). */
   readonly audit: AuditLogs;
+  /** Support routing, escalations to FinBaze and consented view-as (Wave 5.5). */
+  readonly support: Support;
+  /** Test clocks, seeded test companies and the sandbox reset (Wave 5.5). */
+  readonly sandbox: Sandbox;
 
   constructor(http: FinbazeHttpClient) {
     this.companies = new Companies(http);
@@ -469,5 +477,7 @@ export class PlatformNamespace {
     this.firms = new Firms(http);
     this.transfers = new Transfers(http);
     this.audit = new AuditLogs(http);
+    this.support = new Support(http);
+    this.sandbox = new Sandbox(http);
   }
 }

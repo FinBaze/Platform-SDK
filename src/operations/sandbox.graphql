@@ -1,0 +1,74 @@
+fragment SdkTestClockFields on TestClock {
+  id
+  name
+  frozenTime
+  status
+  advanceTarget
+  companies
+}
+
+fragment SdkSandboxSettingsFields on PlatformSandboxSettings {
+  sandboxReset
+  sandboxSeedTemplates
+  lastResetAt
+}
+
+query SdkTestClocks {
+  testClocks {
+    ...SdkTestClockFields
+  }
+}
+
+mutation SdkCreateTestClock($name: String!, $frozenTime: DateTime!) {
+  createTestClock(name: $name, frozenTime: $frozenTime) {
+    ...SdkTestClockFields
+  }
+}
+
+mutation SdkAdvanceTestClock($id: ID!, $to: DateTime!, $options: AdvanceTestClockOptionsInput) {
+  advanceTestClock(id: $id, to: $to, options: $options) {
+    ...SdkTestClockFields
+  }
+}
+
+mutation SdkDeleteTestClock($id: ID!) {
+  deleteTestClock(id: $id)
+}
+
+mutation SdkSeedTestCompany($input: SeedTestCompanyInput!) {
+  seedTestCompany(input: $input) {
+    id
+    platformId
+    externalId
+    legalName
+  }
+}
+
+query SdkPlatformSandboxSettings {
+  platformSandboxSettings {
+    ...SdkSandboxSettingsFields
+  }
+}
+
+mutation SdkUpdatePlatformSandboxSettings($input: UpdatePlatformSandboxSettingsInput!) {
+  updatePlatformSandboxSettings(input: $input) {
+    ...SdkSandboxSettingsFields
+  }
+}
+
+mutation SdkResetPlatformSandbox {
+  resetPlatformSandbox {
+    trigger
+    companiesDeleted
+    companiesKept
+    clocksDeleted
+    companiesSeeded {
+      template
+      externalId
+      companyId
+    }
+    errors
+    startedAt
+    finishedAt
+  }
+}

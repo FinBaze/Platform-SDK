@@ -1,0 +1,93 @@
+fragment SdkSupportSettingsFields on PlatformSupportSettings {
+  supportMode
+  supportUrl
+  supportEmail
+  supportEscalationEnabled
+}
+
+fragment SdkSupportEscalationFields on SupportEscalation {
+  id
+  companyId
+  subject
+  description
+  severity
+  status
+  requestIds
+  screen
+  created
+  updated
+  comments {
+    id
+    authorKind
+    body
+    attachments
+    created
+  }
+}
+
+fragment SdkSupportAccessGrantFields on SupportAccessGrant {
+  id
+  companyId
+  reason
+  scope
+  status
+  durationMinutes
+  requestedAt
+  activatedAt
+  expiresAt
+  revokedAt
+  escalationId
+  breakGlass
+}
+
+query SdkPlatformSupportSettings {
+  platformSupportSettings {
+    ...SdkSupportSettingsFields
+  }
+}
+
+mutation SdkUpdatePlatformSupportSettings($input: PlatformSupportSettingsInput!) {
+  updatePlatformSupportSettings(input: $input) {
+    ...SdkSupportSettingsFields
+  }
+}
+
+query SdkSupportEscalations($status: [SupportEscalationStatus!], $first: Int, $after: String) {
+  supportEscalations(status: $status, first: $first, after: $after) {
+    ...SdkSupportEscalationFields
+  }
+}
+
+mutation SdkCreateSupportEscalation($input: CreateSupportEscalationInput!) {
+  createSupportEscalation(input: $input) {
+    ...SdkSupportEscalationFields
+  }
+}
+
+mutation SdkAddSupportEscalationComment($escalationId: ID!, $body: String!) {
+  addSupportEscalationComment(escalationId: $escalationId, body: $body) {
+    id
+    authorKind
+    body
+    attachments
+    created
+  }
+}
+
+query SdkSupportAccessGrants($companyId: ID!, $includeEnded: Boolean) {
+  supportAccessGrants(companyId: $companyId, includeEnded: $includeEnded) {
+    ...SdkSupportAccessGrantFields
+  }
+}
+
+mutation SdkDecideSupportAccess($grantId: ID!, $approve: Boolean!, $attestation: String, $stepUpAssertionId: ID) {
+  decideSupportAccess(grantId: $grantId, approve: $approve, attestation: $attestation, stepUpAssertionId: $stepUpAssertionId) {
+    ...SdkSupportAccessGrantFields
+  }
+}
+
+mutation SdkRevokeSupportAccess($grantId: ID!) {
+  revokeSupportAccess(grantId: $grantId) {
+    ...SdkSupportAccessGrantFields
+  }
+}

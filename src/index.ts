@@ -53,12 +53,24 @@ export type {
   QuotaReachedEvent,
   CompanyRequirementsUpdatedEvent,
   StepUpRequiredEvent,
+  SupportAccessExpiredEvent,
+  SupportAccessGrantEventObject,
+  SupportAccessGrantedEvent,
+  SupportAccessRequestedEvent,
+  SupportAccessRevokedEvent,
+  SupportBreakGlassEvent,
+  SupportEscalationCreatedEvent,
+  SupportEscalationEventObject,
+  SupportEscalationUpdatedEvent,
+  SupportRequestedEvent,
   TaxAuthorisationEventObject,
   TaxAuthorisationGrantedEvent,
   TaxAuthorisationRevokedEvent,
   TaxReservationAdvisedEvent,
 } from './control-events.js';
 export type { TaxAuthorisations } from './resources/platform/tax-authorisations.js';
+export type { CreateSupportEscalationParams, Support, SupportSettingsUpdate } from './resources/platform/support.js';
+export type { Sandbox, SeedTestCompanyParams } from './resources/platform/sandbox.js';
 
 export { isFirmEvent } from './firm-events.js';
 export type {

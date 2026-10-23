@@ -36,6 +36,13 @@ export type AddressUpsertFields = {
   thoroughfare?: string | null | undefined;
 };
 
+export type AdvanceTestClockOptionsInput = {
+  /** Close financial years that have ended. Default false. */
+  closeFinancialYear?: boolean | null | undefined;
+  /** Submit the draft filings of ended periods (through the simulated Digipoort). Default false. */
+  submitFilings?: boolean | null | undefined;
+};
+
 export type AuditActorKind =
   | 'account'
   | 'app'
@@ -716,6 +723,8 @@ export type CreatePlatformCompanyInput = {
   registrationNumber?: string | null | undefined;
   /** Omit for country defaults; [] for none. */
   taxObligations?: Array<PlatformCompanyTaxObligationInput> | null | undefined;
+  /** Sandbox only (error SANDBOX_ONLY elsewhere): put the company on this test clock. */
+  testClockId?: string | number | null | undefined;
   timezone?: string | null | undefined;
   vatNumber?: string | null | undefined;
 };
@@ -838,6 +847,18 @@ export type CreateSalesInvoiceInput = {
   relationId?: string | null | undefined;
   uuid: string;
   vatNumber?: string | null | undefined;
+};
+
+export type CreateSupportEscalationInput = {
+  /** The company the case is about. Required for company users (embed). */
+  companyId?: string | number | null | undefined;
+  contactEmail?: string | null | undefined;
+  description: string;
+  /** `X-Request-Id` of the failing requests (at most 20). */
+  requestIds?: Array<string> | null | undefined;
+  screen?: string | null | undefined;
+  severity?: SupportSeverity | null | undefined;
+  subject: string;
 };
 
 export type Currency =
@@ -1218,6 +1239,17 @@ export type DocumentType =
   | 'report'
   | 'year_document';
 
+export type EmbedAccountantConnectComponentInput = {
+  enabled?: boolean;
+  features?: EmbedAccountantConnectFeaturesInput | null | undefined;
+};
+
+export type EmbedAccountantConnectFeaturesInput = {
+  approve?: boolean | null | undefined;
+  end?: boolean | null | undefined;
+  invite?: boolean | null | undefined;
+};
+
 export type EmbedBasicComponentInput = {
   enabled?: boolean;
 };
@@ -1232,15 +1264,18 @@ export type EmbedBookingChipFeaturesInput = {
 };
 
 export type EmbedComponent =
+  | 'accountant_connect'
   | 'action_centre'
   | 'booking_chip'
   | 'company_transfer'
+  | 'contact_support'
   | 'icp_return'
   | 'notification_banner'
   | 'onboarding'
   | 'oss_return'
   | 'purchase_inbox'
   | 'receipt_button'
+  | 'support_access'
   | 'tax_authorisation'
   | 'tax_calendar'
   | 'tax_due_chip'
@@ -1256,6 +1291,7 @@ export type EmbedOnboardingComponentInput = {
 
 export type EmbedOnboardingFeaturesInput = {
   editCompany?: boolean | null | undefined;
+  filingConsent?: boolean | null | undefined;
   taxSetup?: boolean | null | undefined;
 };
 
@@ -1271,15 +1307,18 @@ export type EmbedPurchaseInboxFeaturesInput = {
 };
 
 export type EmbedSessionComponentsInput = {
+  accountantConnect?: EmbedAccountantConnectComponentInput | null | undefined;
   actionCentre?: EmbedBasicComponentInput | null | undefined;
   bookingChip?: EmbedBookingChipComponentInput | null | undefined;
   companyTransfer?: EmbedBasicComponentInput | null | undefined;
+  contactSupport?: EmbedBasicComponentInput | null | undefined;
   icpReturn?: EmbedSubmitComponentInput | null | undefined;
   notificationBanner?: EmbedBasicComponentInput | null | undefined;
   onboarding?: EmbedOnboardingComponentInput | null | undefined;
   ossReturn?: EmbedSubmitComponentInput | null | undefined;
   purchaseInbox?: EmbedPurchaseInboxComponentInput | null | undefined;
   receiptButton?: EmbedBasicComponentInput | null | undefined;
+  supportAccess?: EmbedBasicComponentInput | null | undefined;
   taxAuthorisation?: EmbedTaxAuthorisationComponentInput | null | undefined;
   taxCalendar?: EmbedBasicComponentInput | null | undefined;
   taxDueChip?: EmbedBasicComponentInput | null | undefined;
@@ -1318,6 +1357,7 @@ export type EmbedSubmitComponentInput = {
 };
 
 export type EmbedSubmitFeaturesInput = {
+  inlineConsent?: boolean | null | undefined;
   submit?: boolean | null | undefined;
 };
 
@@ -1327,6 +1367,7 @@ export type EmbedTaxAuthorisationComponentInput = {
 };
 
 export type EmbedTaxAuthorisationFeaturesInput = {
+  grant?: boolean | null | undefined;
   hmrcConnect?: boolean | null | undefined;
   revoke?: boolean | null | undefined;
 };
@@ -1360,6 +1401,7 @@ export type EmbedVatReturnComponentInput = {
 };
 
 export type EmbedVatReturnFeaturesInput = {
+  inlineConsent?: boolean | null | undefined;
   payment?: boolean | null | undefined;
   submit?: boolean | null | undefined;
   suppletie?: boolean | null | undefined;
@@ -2195,7 +2237,16 @@ export type OnboardingRequirementKey =
   | 'company_address'
   | 'company_legal_form'
   | 'company_registration'
+  | 'tax_nl_annual_accounts_authorisation'
+  | 'tax_nl_cit_authorisation'
+  | 'tax_nl_icp_authorisation'
+  | 'tax_nl_oss_authorisation'
+  | 'tax_nl_pension_authorisation'
+  | 'tax_nl_vat_authorisation'
+  | 'tax_nl_wage_tax_authorisation'
   | 'tax_obligations'
+  | 'tax_uk_income_tax_authorisation'
+  | 'tax_uk_vat_authorisation'
   | 'tax_uk_vat_hmrc_connection';
 
 export type PspPaymentMethod =
@@ -2444,6 +2495,17 @@ export type PlatformStatusFilterComparison = {
   notLike?: PlatformStatus | null | undefined;
 };
 
+export type PlatformSupportSettingsInput = {
+  /** Portal callers: the platform. Tokens: omit. */
+  platformId?: string | number | null | undefined;
+  /** Empty string clears it. */
+  supportEmail?: string | null | undefined;
+  supportEscalationEnabled?: boolean | null | undefined;
+  supportMode?: SupportMode | null | undefined;
+  /** https URL opened by contact-support when the parent page has no handler. Empty string clears it. */
+  supportUrl?: string | null | undefined;
+};
+
 export type PolicyKind =
   | 'booking_rules'
   | 'category_mapping'
@@ -2570,6 +2632,8 @@ export type ProcessDocumentFilterBookkeeperFilter = {
   payrollModuleEnabledAt?: DateFieldComparison | null | undefined;
   primaryColor?: StringFieldComparison | null | undefined;
   privacyPolicyUrl?: StringFieldComparison | null | undefined;
+  professionalAssociationMemberNumber?: StringFieldComparison | null | undefined;
+  professionalAssociationName?: StringFieldComparison | null | undefined;
   registrationCountry?: CountryFilterComparison | null | undefined;
   registrationNumber?: StringFieldComparison | null | undefined;
   senderEmail?: StringFieldComparison | null | undefined;
@@ -3003,6 +3067,8 @@ export type ProfileFilterBookkeeperFilter = {
   payrollModuleEnabledAt?: DateFieldComparison | null | undefined;
   primaryColor?: StringFieldComparison | null | undefined;
   privacyPolicyUrl?: StringFieldComparison | null | undefined;
+  professionalAssociationMemberNumber?: StringFieldComparison | null | undefined;
+  professionalAssociationName?: StringFieldComparison | null | undefined;
   registrationCountry?: CountryFilterComparison | null | undefined;
   registrationNumber?: StringFieldComparison | null | undefined;
   senderEmail?: StringFieldComparison | null | undefined;
@@ -4669,6 +4735,23 @@ export type SalesInvoiceUpsertFields = {
   vatNumber?: string | null | undefined;
 };
 
+export type SandboxResetMode =
+  | 'nightly'
+  | 'none';
+
+export type SeedTestCompanyInput = {
+  /** Your id for the company. Default: a stable id per template, so seeding again returns the same company. */
+  externalId?: string | null | undefined;
+  platformId?: string | number | null | undefined;
+  /** Keep the company when the sandbox is reset. */
+  preserve?: boolean | null | undefined;
+  template: TestCompanyTemplate;
+  /** Put the company on this test clock. */
+  testClockId?: string | number | null | undefined;
+  /** Platform users who get admin access to the company. */
+  users?: Array<string | number> | null | undefined;
+};
+
 export type SetFieldControlInput = {
   companyId?: string | number | null | undefined;
   field: string;
@@ -4771,6 +4854,34 @@ export type SubscriptionPaymentMethodTypeFilterComparison = {
   notIn?: Array<Array<SubscriptionPaymentMethodType>> | null | undefined;
   notLike?: Array<SubscriptionPaymentMethodType> | null | undefined;
 };
+
+export type SupportAccessScope =
+  | 'read'
+  | 'read_write';
+
+export type SupportAccessStatus =
+  | 'active'
+  | 'denied'
+  | 'expired'
+  | 'requested'
+  | 'revoked';
+
+export type SupportEscalationStatus =
+  | 'closed'
+  | 'in_progress'
+  | 'open'
+  | 'resolved'
+  | 'waiting_on_platform';
+
+export type SupportMode =
+  | 'finbaze_direct'
+  | 'partner_first';
+
+export type SupportSeverity =
+  | 'high'
+  | 'low'
+  | 'normal'
+  | 'urgent';
 
 export type TaxFilingKind =
   | 'regular'
@@ -4979,6 +5090,13 @@ export type TaxSettingsInput = {
   usSCorpElectionDate?: string | null | undefined;
 };
 
+export type TestCompanyTemplate =
+  | 'nl_bv_logistics_oss'
+  | 'nl_bv_payroll'
+  | 'nl_eenmanszaak_services'
+  | 'nl_horeca_pos'
+  | 'uk_ltd_vat';
+
 export type TodoItemType =
   | 'document_request'
   | 'payment'
@@ -5153,6 +5271,14 @@ export type UpdatePlatformMessageSettingsInput = {
   quietHoursStart?: string | null | undefined;
   quietHoursTimezone?: string | null | undefined;
   supportEmail?: string | null | undefined;
+};
+
+export type UpdatePlatformSandboxSettingsInput = {
+  platformId?: string | number | null | undefined;
+  /** none (default) or nightly: reset the sandbox companies every night. */
+  sandboxReset?: SandboxResetMode | null | undefined;
+  /** Templates the reset seeds again, with stable externalIds. */
+  sandboxSeedTemplates?: Array<TestCompanyTemplate> | null | undefined;
 };
 
 export type UpdatePlatformWebhookEndpointInput = {
@@ -7603,6 +7729,130 @@ export type SdkCreditSalesInvoiceMutationVariables = Exact<{
 
 export type SdkCreditSalesInvoiceMutation = { creditSalesInvoice: { id: string, uuid: string, number: string | null } };
 
+export type SdkTestClockFieldsFragment = { id: string, name: string, frozenTime: string, status: string, advanceTarget: string | null, companies: Array<string> };
+
+export type SdkSandboxSettingsFieldsFragment = { sandboxReset: SandboxResetMode, sandboxSeedTemplates: Array<TestCompanyTemplate>, lastResetAt: string | null };
+
+export type SdkTestClocksQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkTestClocksQuery = { testClocks: Array<{ id: string, name: string, frozenTime: string, status: string, advanceTarget: string | null, companies: Array<string> }> };
+
+export type SdkCreateTestClockMutationVariables = Exact<{
+  name: string;
+  frozenTime: string;
+}>;
+
+
+export type SdkCreateTestClockMutation = { createTestClock: { id: string, name: string, frozenTime: string, status: string, advanceTarget: string | null, companies: Array<string> } };
+
+export type SdkAdvanceTestClockMutationVariables = Exact<{
+  id: string | number;
+  to: string;
+  options?: AdvanceTestClockOptionsInput | null | undefined;
+}>;
+
+
+export type SdkAdvanceTestClockMutation = { advanceTestClock: { id: string, name: string, frozenTime: string, status: string, advanceTarget: string | null, companies: Array<string> } };
+
+export type SdkDeleteTestClockMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type SdkDeleteTestClockMutation = { deleteTestClock: boolean };
+
+export type SdkSeedTestCompanyMutationVariables = Exact<{
+  input: SeedTestCompanyInput;
+}>;
+
+
+export type SdkSeedTestCompanyMutation = { seedTestCompany: { id: string, platformId: string, externalId: string, legalName: string } };
+
+export type SdkPlatformSandboxSettingsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkPlatformSandboxSettingsQuery = { platformSandboxSettings: { sandboxReset: SandboxResetMode, sandboxSeedTemplates: Array<TestCompanyTemplate>, lastResetAt: string | null } };
+
+export type SdkUpdatePlatformSandboxSettingsMutationVariables = Exact<{
+  input: UpdatePlatformSandboxSettingsInput;
+}>;
+
+
+export type SdkUpdatePlatformSandboxSettingsMutation = { updatePlatformSandboxSettings: { sandboxReset: SandboxResetMode, sandboxSeedTemplates: Array<TestCompanyTemplate>, lastResetAt: string | null } };
+
+export type SdkResetPlatformSandboxMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkResetPlatformSandboxMutation = { resetPlatformSandbox: { trigger: string, companiesDeleted: number, companiesKept: number, clocksDeleted: number, errors: Array<string>, startedAt: string, finishedAt: string, companiesSeeded: Array<{ template: string, externalId: string, companyId: string }> } };
+
+export type SdkSupportSettingsFieldsFragment = { supportMode: SupportMode, supportUrl: string | null, supportEmail: string | null, supportEscalationEnabled: boolean };
+
+export type SdkSupportEscalationFieldsFragment = { id: string, companyId: string | null, subject: string, description: string, severity: SupportSeverity, status: SupportEscalationStatus, requestIds: Array<string>, screen: string | null, created: string, updated: string, comments: Array<{ id: string, authorKind: string, body: string, attachments: Array<string>, created: string }> };
+
+export type SdkSupportAccessGrantFieldsFragment = { id: string, companyId: string, reason: string, scope: SupportAccessScope, status: SupportAccessStatus, durationMinutes: number, requestedAt: string, activatedAt: string | null, expiresAt: string | null, revokedAt: string | null, escalationId: string | null, breakGlass: boolean };
+
+export type SdkPlatformSupportSettingsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SdkPlatformSupportSettingsQuery = { platformSupportSettings: { supportMode: SupportMode, supportUrl: string | null, supportEmail: string | null, supportEscalationEnabled: boolean } };
+
+export type SdkUpdatePlatformSupportSettingsMutationVariables = Exact<{
+  input: PlatformSupportSettingsInput;
+}>;
+
+
+export type SdkUpdatePlatformSupportSettingsMutation = { updatePlatformSupportSettings: { supportMode: SupportMode, supportUrl: string | null, supportEmail: string | null, supportEscalationEnabled: boolean } };
+
+export type SdkSupportEscalationsQueryVariables = Exact<{
+  status?: Array<SupportEscalationStatus> | SupportEscalationStatus | null | undefined;
+  first?: number | null | undefined;
+  after?: string | null | undefined;
+}>;
+
+
+export type SdkSupportEscalationsQuery = { supportEscalations: Array<{ id: string, companyId: string | null, subject: string, description: string, severity: SupportSeverity, status: SupportEscalationStatus, requestIds: Array<string>, screen: string | null, created: string, updated: string, comments: Array<{ id: string, authorKind: string, body: string, attachments: Array<string>, created: string }> }> };
+
+export type SdkCreateSupportEscalationMutationVariables = Exact<{
+  input: CreateSupportEscalationInput;
+}>;
+
+
+export type SdkCreateSupportEscalationMutation = { createSupportEscalation: { id: string, companyId: string | null, subject: string, description: string, severity: SupportSeverity, status: SupportEscalationStatus, requestIds: Array<string>, screen: string | null, created: string, updated: string, comments: Array<{ id: string, authorKind: string, body: string, attachments: Array<string>, created: string }> } };
+
+export type SdkAddSupportEscalationCommentMutationVariables = Exact<{
+  escalationId: string | number;
+  body: string;
+}>;
+
+
+export type SdkAddSupportEscalationCommentMutation = { addSupportEscalationComment: { id: string, authorKind: string, body: string, attachments: Array<string>, created: string } };
+
+export type SdkSupportAccessGrantsQueryVariables = Exact<{
+  companyId: string | number;
+  includeEnded?: boolean | null | undefined;
+}>;
+
+
+export type SdkSupportAccessGrantsQuery = { supportAccessGrants: Array<{ id: string, companyId: string, reason: string, scope: SupportAccessScope, status: SupportAccessStatus, durationMinutes: number, requestedAt: string, activatedAt: string | null, expiresAt: string | null, revokedAt: string | null, escalationId: string | null, breakGlass: boolean }> };
+
+export type SdkDecideSupportAccessMutationVariables = Exact<{
+  grantId: string | number;
+  approve: boolean;
+  attestation?: string | null | undefined;
+  stepUpAssertionId?: string | number | null | undefined;
+}>;
+
+
+export type SdkDecideSupportAccessMutation = { decideSupportAccess: { id: string, companyId: string, reason: string, scope: SupportAccessScope, status: SupportAccessStatus, durationMinutes: number, requestedAt: string, activatedAt: string | null, expiresAt: string | null, revokedAt: string | null, escalationId: string | null, breakGlass: boolean } };
+
+export type SdkRevokeSupportAccessMutationVariables = Exact<{
+  grantId: string | number;
+}>;
+
+
+export type SdkRevokeSupportAccessMutation = { revokeSupportAccess: { id: string, companyId: string, reason: string, scope: SupportAccessScope, status: SupportAccessStatus, durationMinutes: number, requestedAt: string, activatedAt: string | null, expiresAt: string | null, revokedAt: string | null, escalationId: string | null, breakGlass: boolean } };
+
 export type SdkTaxAuthorisationFieldsFragment = { id: string, companyId: string, taxes: Array<AuthorisedTax>, statementVersion: string, locale: string, channel: TaxAuthorisationChannel, grantedAt: string, stepUp: boolean, revokedAt: string | null, revokedVia: string | null, supersedesId: string | null, grantedBy: { id: string, externalUserId: string, firstName: string, lastName: string } | null };
 
 export type SdkTaxAuthorisationsQueryVariables = Exact<{
@@ -7661,6 +7911,11 @@ export const SdkPlatformCompanyFieldsFragmentDoc = {"kind":"Document","definitio
 export const SdkPlatformUserFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkPlatformUserFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformUser"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"platformId"}},{"kind":"Field","name":{"kind":"Name","value":"externalUserId"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}},{"kind":"Field","name":{"kind":"Name","value":"language"}},{"kind":"Field","name":{"kind":"Name","value":"disabledAt"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"access"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"profileId"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"role"}}]}}]}}]} as unknown as DocumentNode<SdkPlatformUserFieldsFragment, unknown>;
 export const SdkEmbedSessionFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkEmbedSessionFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"EmbedSession"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"platformUserId"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"origin"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"exchangedAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedReason"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"components"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"component"}},{"kind":"Field","name":{"kind":"Name","value":"features"}}]}}]}}]} as unknown as DocumentNode<SdkEmbedSessionFieldsFragment, unknown>;
 export const SdkPolicyVersionFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkPolicyVersionFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformPolicyVersion"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"payload"}},{"kind":"Field","name":{"kind":"Name","value":"checksum"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"promotedFrom"}}]}}]} as unknown as DocumentNode<SdkPolicyVersionFieldsFragment, unknown>;
+export const SdkTestClockFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkTestClockFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TestClock"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"frozenTime"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"advanceTarget"}},{"kind":"Field","name":{"kind":"Name","value":"companies"}}]}}]} as unknown as DocumentNode<SdkTestClockFieldsFragment, unknown>;
+export const SdkSandboxSettingsFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSandboxSettingsFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformSandboxSettings"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sandboxReset"}},{"kind":"Field","name":{"kind":"Name","value":"sandboxSeedTemplates"}},{"kind":"Field","name":{"kind":"Name","value":"lastResetAt"}}]}}]} as unknown as DocumentNode<SdkSandboxSettingsFieldsFragment, unknown>;
+export const SdkSupportSettingsFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportSettingsFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformSupportSettings"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"supportMode"}},{"kind":"Field","name":{"kind":"Name","value":"supportUrl"}},{"kind":"Field","name":{"kind":"Name","value":"supportEmail"}},{"kind":"Field","name":{"kind":"Name","value":"supportEscalationEnabled"}}]}}]} as unknown as DocumentNode<SdkSupportSettingsFieldsFragment, unknown>;
+export const SdkSupportEscalationFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportEscalationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"SupportEscalation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"subject"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"requestIds"}},{"kind":"Field","name":{"kind":"Name","value":"screen"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}},{"kind":"Field","name":{"kind":"Name","value":"comments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"authorKind"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"attachments"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]}}]} as unknown as DocumentNode<SdkSupportEscalationFieldsFragment, unknown>;
+export const SdkSupportAccessGrantFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportAccessGrantFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"SupportAccessGrant"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"reason"}},{"kind":"Field","name":{"kind":"Name","value":"scope"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"durationMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"requestedAt"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"escalationId"}},{"kind":"Field","name":{"kind":"Name","value":"breakGlass"}}]}}]} as unknown as DocumentNode<SdkSupportAccessGrantFieldsFragment, unknown>;
 export const SdkTaxAuthorisationFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkTaxAuthorisationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TaxAuthorisation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"taxes"}},{"kind":"Field","name":{"kind":"Name","value":"statementVersion"}},{"kind":"Field","name":{"kind":"Name","value":"locale"}},{"kind":"Field","name":{"kind":"Name","value":"channel"}},{"kind":"Field","name":{"kind":"Name","value":"grantedAt"}},{"kind":"Field","name":{"kind":"Name","value":"stepUp"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedVia"}},{"kind":"Field","name":{"kind":"Name","value":"supersedesId"}},{"kind":"Field","name":{"kind":"Name","value":"grantedBy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalUserId"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}}]}}]}}]} as unknown as DocumentNode<SdkTaxAuthorisationFieldsFragment, unknown>;
 export const SdkProfileApiCredentialsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkProfileApiCredentials"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"profileId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"profileApiCredentials"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"profileId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"profileId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"clientId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}}]}}]}}]} as unknown as DocumentNode<SdkProfileApiCredentialsQuery, SdkProfileApiCredentialsQueryVariables>;
 export const SdkCreateProfileApiCredentialDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCreateProfileApiCredential"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"profileId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateApiCredentialInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createProfileApiCredential"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"profileId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"profileId"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"clientId"}},{"kind":"Field","name":{"kind":"Name","value":"clientSecret"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}}]}}]}}]} as unknown as DocumentNode<SdkCreateProfileApiCredentialMutation, SdkCreateProfileApiCredentialMutationVariables>;
@@ -7922,6 +8177,22 @@ export const SdkDeleteSalesInvoiceDocument = {"kind":"Document","definitions":[{
 export const SdkCloseSalesInvoiceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCloseSalesInvoice"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"send"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"closeSalesInvoice"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"send"},"value":{"kind":"Variable","name":{"kind":"Name","value":"send"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"closed"}}]}}]}}]} as unknown as DocumentNode<SdkCloseSalesInvoiceMutation, SdkCloseSalesInvoiceMutationVariables>;
 export const SdkReopenSalesInvoiceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkReopenSalesInvoice"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"reopenSalesInvoice"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"closed"}}]}}]}}]} as unknown as DocumentNode<SdkReopenSalesInvoiceMutation, SdkReopenSalesInvoiceMutationVariables>;
 export const SdkCreditSalesInvoiceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCreditSalesInvoice"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"close"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"creditSalesInvoice"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"close"},"value":{"kind":"Variable","name":{"kind":"Name","value":"close"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"uuid"}},{"kind":"Field","name":{"kind":"Name","value":"number"}}]}}]}}]} as unknown as DocumentNode<SdkCreditSalesInvoiceMutation, SdkCreditSalesInvoiceMutationVariables>;
+export const SdkTestClocksDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkTestClocks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"testClocks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkTestClockFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkTestClockFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TestClock"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"frozenTime"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"advanceTarget"}},{"kind":"Field","name":{"kind":"Name","value":"companies"}}]}}]} as unknown as DocumentNode<SdkTestClocksQuery, SdkTestClocksQueryVariables>;
+export const SdkCreateTestClockDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCreateTestClock"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"frozenTime"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DateTime"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createTestClock"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}},{"kind":"Argument","name":{"kind":"Name","value":"frozenTime"},"value":{"kind":"Variable","name":{"kind":"Name","value":"frozenTime"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkTestClockFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkTestClockFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TestClock"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"frozenTime"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"advanceTarget"}},{"kind":"Field","name":{"kind":"Name","value":"companies"}}]}}]} as unknown as DocumentNode<SdkCreateTestClockMutation, SdkCreateTestClockMutationVariables>;
+export const SdkAdvanceTestClockDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkAdvanceTestClock"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"to"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DateTime"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"options"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"AdvanceTestClockOptionsInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"advanceTestClock"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"to"},"value":{"kind":"Variable","name":{"kind":"Name","value":"to"}}},{"kind":"Argument","name":{"kind":"Name","value":"options"},"value":{"kind":"Variable","name":{"kind":"Name","value":"options"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkTestClockFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkTestClockFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TestClock"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"frozenTime"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"advanceTarget"}},{"kind":"Field","name":{"kind":"Name","value":"companies"}}]}}]} as unknown as DocumentNode<SdkAdvanceTestClockMutation, SdkAdvanceTestClockMutationVariables>;
+export const SdkDeleteTestClockDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkDeleteTestClock"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteTestClock"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<SdkDeleteTestClockMutation, SdkDeleteTestClockMutationVariables>;
+export const SdkSeedTestCompanyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkSeedTestCompany"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SeedTestCompanyInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"seedTestCompany"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"platformId"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"legalName"}}]}}]}}]} as unknown as DocumentNode<SdkSeedTestCompanyMutation, SdkSeedTestCompanyMutationVariables>;
+export const SdkPlatformSandboxSettingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformSandboxSettings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformSandboxSettings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkSandboxSettingsFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSandboxSettingsFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformSandboxSettings"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sandboxReset"}},{"kind":"Field","name":{"kind":"Name","value":"sandboxSeedTemplates"}},{"kind":"Field","name":{"kind":"Name","value":"lastResetAt"}}]}}]} as unknown as DocumentNode<SdkPlatformSandboxSettingsQuery, SdkPlatformSandboxSettingsQueryVariables>;
+export const SdkUpdatePlatformSandboxSettingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpdatePlatformSandboxSettings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdatePlatformSandboxSettingsInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updatePlatformSandboxSettings"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkSandboxSettingsFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSandboxSettingsFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformSandboxSettings"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sandboxReset"}},{"kind":"Field","name":{"kind":"Name","value":"sandboxSeedTemplates"}},{"kind":"Field","name":{"kind":"Name","value":"lastResetAt"}}]}}]} as unknown as DocumentNode<SdkUpdatePlatformSandboxSettingsMutation, SdkUpdatePlatformSandboxSettingsMutationVariables>;
+export const SdkResetPlatformSandboxDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkResetPlatformSandbox"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resetPlatformSandbox"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trigger"}},{"kind":"Field","name":{"kind":"Name","value":"companiesDeleted"}},{"kind":"Field","name":{"kind":"Name","value":"companiesKept"}},{"kind":"Field","name":{"kind":"Name","value":"clocksDeleted"}},{"kind":"Field","name":{"kind":"Name","value":"companiesSeeded"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"template"}},{"kind":"Field","name":{"kind":"Name","value":"externalId"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"errors"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}}]}}]}}]} as unknown as DocumentNode<SdkResetPlatformSandboxMutation, SdkResetPlatformSandboxMutationVariables>;
+export const SdkPlatformSupportSettingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkPlatformSupportSettings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformSupportSettings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkSupportSettingsFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportSettingsFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformSupportSettings"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"supportMode"}},{"kind":"Field","name":{"kind":"Name","value":"supportUrl"}},{"kind":"Field","name":{"kind":"Name","value":"supportEmail"}},{"kind":"Field","name":{"kind":"Name","value":"supportEscalationEnabled"}}]}}]} as unknown as DocumentNode<SdkPlatformSupportSettingsQuery, SdkPlatformSupportSettingsQueryVariables>;
+export const SdkUpdatePlatformSupportSettingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkUpdatePlatformSupportSettings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformSupportSettingsInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updatePlatformSupportSettings"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkSupportSettingsFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportSettingsFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PlatformSupportSettings"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"supportMode"}},{"kind":"Field","name":{"kind":"Name","value":"supportUrl"}},{"kind":"Field","name":{"kind":"Name","value":"supportEmail"}},{"kind":"Field","name":{"kind":"Name","value":"supportEscalationEnabled"}}]}}]} as unknown as DocumentNode<SdkUpdatePlatformSupportSettingsMutation, SdkUpdatePlatformSupportSettingsMutationVariables>;
+export const SdkSupportEscalationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkSupportEscalations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SupportEscalationStatus"}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"supportEscalations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkSupportEscalationFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportEscalationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"SupportEscalation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"subject"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"requestIds"}},{"kind":"Field","name":{"kind":"Name","value":"screen"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}},{"kind":"Field","name":{"kind":"Name","value":"comments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"authorKind"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"attachments"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]}}]} as unknown as DocumentNode<SdkSupportEscalationsQuery, SdkSupportEscalationsQueryVariables>;
+export const SdkCreateSupportEscalationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkCreateSupportEscalation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateSupportEscalationInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createSupportEscalation"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkSupportEscalationFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportEscalationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"SupportEscalation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"subject"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"requestIds"}},{"kind":"Field","name":{"kind":"Name","value":"screen"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"updated"}},{"kind":"Field","name":{"kind":"Name","value":"comments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"authorKind"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"attachments"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]}}]} as unknown as DocumentNode<SdkCreateSupportEscalationMutation, SdkCreateSupportEscalationMutationVariables>;
+export const SdkAddSupportEscalationCommentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkAddSupportEscalationComment"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"escalationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"body"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addSupportEscalationComment"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"escalationId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"escalationId"}}},{"kind":"Argument","name":{"kind":"Name","value":"body"},"value":{"kind":"Variable","name":{"kind":"Name","value":"body"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"authorKind"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"attachments"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]}}]} as unknown as DocumentNode<SdkAddSupportEscalationCommentMutation, SdkAddSupportEscalationCommentMutationVariables>;
+export const SdkSupportAccessGrantsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkSupportAccessGrants"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"companyId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"includeEnded"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"supportAccessGrants"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"companyId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"companyId"}}},{"kind":"Argument","name":{"kind":"Name","value":"includeEnded"},"value":{"kind":"Variable","name":{"kind":"Name","value":"includeEnded"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkSupportAccessGrantFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportAccessGrantFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"SupportAccessGrant"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"reason"}},{"kind":"Field","name":{"kind":"Name","value":"scope"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"durationMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"requestedAt"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"escalationId"}},{"kind":"Field","name":{"kind":"Name","value":"breakGlass"}}]}}]} as unknown as DocumentNode<SdkSupportAccessGrantsQuery, SdkSupportAccessGrantsQueryVariables>;
+export const SdkDecideSupportAccessDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkDecideSupportAccess"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"approve"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"attestation"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"stepUpAssertionId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"decideSupportAccess"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"grantId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}}},{"kind":"Argument","name":{"kind":"Name","value":"approve"},"value":{"kind":"Variable","name":{"kind":"Name","value":"approve"}}},{"kind":"Argument","name":{"kind":"Name","value":"attestation"},"value":{"kind":"Variable","name":{"kind":"Name","value":"attestation"}}},{"kind":"Argument","name":{"kind":"Name","value":"stepUpAssertionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"stepUpAssertionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkSupportAccessGrantFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportAccessGrantFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"SupportAccessGrant"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"reason"}},{"kind":"Field","name":{"kind":"Name","value":"scope"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"durationMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"requestedAt"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"escalationId"}},{"kind":"Field","name":{"kind":"Name","value":"breakGlass"}}]}}]} as unknown as DocumentNode<SdkDecideSupportAccessMutation, SdkDecideSupportAccessMutationVariables>;
+export const SdkRevokeSupportAccessDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkRevokeSupportAccess"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"revokeSupportAccess"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"grantId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkSupportAccessGrantFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkSupportAccessGrantFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"SupportAccessGrant"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"reason"}},{"kind":"Field","name":{"kind":"Name","value":"scope"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"durationMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"requestedAt"}},{"kind":"Field","name":{"kind":"Name","value":"activatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"expiresAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"escalationId"}},{"kind":"Field","name":{"kind":"Name","value":"breakGlass"}}]}}]} as unknown as DocumentNode<SdkRevokeSupportAccessMutation, SdkRevokeSupportAccessMutationVariables>;
 export const SdkTaxAuthorisationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkTaxAuthorisations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"companyId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"includeRevoked"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"taxAuthorisations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"companyId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"companyId"}}},{"kind":"Argument","name":{"kind":"Name","value":"includeRevoked"},"value":{"kind":"Variable","name":{"kind":"Name","value":"includeRevoked"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkTaxAuthorisationFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkTaxAuthorisationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TaxAuthorisation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"taxes"}},{"kind":"Field","name":{"kind":"Name","value":"statementVersion"}},{"kind":"Field","name":{"kind":"Name","value":"locale"}},{"kind":"Field","name":{"kind":"Name","value":"channel"}},{"kind":"Field","name":{"kind":"Name","value":"grantedAt"}},{"kind":"Field","name":{"kind":"Name","value":"stepUp"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedVia"}},{"kind":"Field","name":{"kind":"Name","value":"supersedesId"}},{"kind":"Field","name":{"kind":"Name","value":"grantedBy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalUserId"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}}]}}]}}]} as unknown as DocumentNode<SdkTaxAuthorisationsQuery, SdkTaxAuthorisationsQueryVariables>;
 export const SdkTaxAuthorisationStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SdkTaxAuthorisationStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"companyId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"taxAuthorisationStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"companyId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"companyId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tax"}},{"kind":"Field","name":{"kind":"Name","value":"state"}},{"kind":"Field","name":{"kind":"Name","value":"firmName"}},{"kind":"Field","name":{"kind":"Name","value":"authorisation"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkTaxAuthorisationFields"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkTaxAuthorisationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TaxAuthorisation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"taxes"}},{"kind":"Field","name":{"kind":"Name","value":"statementVersion"}},{"kind":"Field","name":{"kind":"Name","value":"locale"}},{"kind":"Field","name":{"kind":"Name","value":"channel"}},{"kind":"Field","name":{"kind":"Name","value":"grantedAt"}},{"kind":"Field","name":{"kind":"Name","value":"stepUp"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedVia"}},{"kind":"Field","name":{"kind":"Name","value":"supersedesId"}},{"kind":"Field","name":{"kind":"Name","value":"grantedBy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalUserId"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}}]}}]}}]} as unknown as DocumentNode<SdkTaxAuthorisationStatusQuery, SdkTaxAuthorisationStatusQueryVariables>;
 export const SdkRevokeTaxAuthorisationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SdkRevokeTaxAuthorisation"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"RevokeTaxAuthorisationInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"revokeTaxAuthorisation"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SdkTaxAuthorisationFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SdkTaxAuthorisationFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TaxAuthorisation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"companyId"}},{"kind":"Field","name":{"kind":"Name","value":"taxes"}},{"kind":"Field","name":{"kind":"Name","value":"statementVersion"}},{"kind":"Field","name":{"kind":"Name","value":"locale"}},{"kind":"Field","name":{"kind":"Name","value":"channel"}},{"kind":"Field","name":{"kind":"Name","value":"grantedAt"}},{"kind":"Field","name":{"kind":"Name","value":"stepUp"}},{"kind":"Field","name":{"kind":"Name","value":"revokedAt"}},{"kind":"Field","name":{"kind":"Name","value":"revokedVia"}},{"kind":"Field","name":{"kind":"Name","value":"supersedesId"}},{"kind":"Field","name":{"kind":"Name","value":"grantedBy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"externalUserId"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}}]}}]}}]} as unknown as DocumentNode<SdkRevokeTaxAuthorisationMutation, SdkRevokeTaxAuthorisationMutationVariables>;

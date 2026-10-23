@@ -95,6 +95,61 @@ export type TaxAuthorisationRevokedEvent = PlatformWebhookEvent<'tax_authorisati
 /** What a company still has to provide changed. `data.object` is the company; `data.details.reason` says why (`tax_authorisation`). Read `platform.companies.requirements(id)`. */
 export type CompanyRequirementsUpdatedEvent = PlatformWebhookEvent<'company.requirements.updated', { object: Record<string, unknown>; details?: { reason?: string } }>;
 
+/** The user pressed `contact-support` and your platform answers first (`partner_first`). `requestIds` are the last failed `X-Request-Id`s (at most 5). */
+export type SupportRequestedEventObject = {
+  __typename: 'Event';
+  id: string | null;
+  companyId: string;
+  screen: string | null;
+  requestIds: string[];
+  componentVersion: string;
+  userId?: string | null;
+};
+export type SupportRequestedEvent = PlatformWebhookEvent<'support.requested', { object: SupportRequestedEventObject }>;
+
+/** An escalation to FinBaze support. `change` is set on `support.escalation.updated`. */
+export type SupportEscalationEventObject = {
+  __typename: 'Event';
+  id: string;
+  companyId: string | null;
+  subject: string;
+  severity: 'low' | 'normal' | 'high' | 'urgent';
+  status: 'open' | 'in_progress' | 'waiting_on_platform' | 'resolved' | 'closed';
+  source: 'platform' | 'user';
+  requestIds: string[];
+  screen: string | null;
+  created: string;
+  updated: string;
+  change?: 'status' | 'severity' | 'assignee' | 'comment';
+  commentId?: string | null;
+  commentAuthor?: 'platform' | 'finbaze' | null;
+};
+export type SupportEscalationCreatedEvent = PlatformWebhookEvent<'support.escalation.created', { object: SupportEscalationEventObject }>;
+export type SupportEscalationUpdatedEvent = PlatformWebhookEvent<'support.escalation.updated', { object: SupportEscalationEventObject }>;
+
+/** A support access grant (consented view-as). `requestedBy` is always `finbaze_support`: no staff names leave FinBaze. */
+export type SupportAccessGrantEventObject = {
+  __typename: 'Event';
+  id: string;
+  companyId: string;
+  reason: string;
+  scope: 'read' | 'read_write';
+  status: 'requested' | 'active' | 'denied' | 'revoked' | 'expired';
+  durationMinutes: number;
+  requestedAt: string;
+  activatedAt: string | null;
+  expiresAt: string | null;
+  escalationId: string | null;
+  breakGlass: boolean;
+  requestedBy: 'finbaze_support';
+};
+export type SupportAccessRequestedEvent = PlatformWebhookEvent<'support.access_requested', { object: SupportAccessGrantEventObject }>;
+export type SupportAccessGrantedEvent = PlatformWebhookEvent<'support.access_granted', { object: SupportAccessGrantEventObject }>;
+export type SupportAccessRevokedEvent = PlatformWebhookEvent<'support.access_revoked', { object: SupportAccessGrantEventObject }>;
+export type SupportAccessExpiredEvent = PlatformWebhookEvent<'support.access_expired', { object: SupportAccessGrantEventObject }>;
+/** FinBaze opened a company without consent (legal order or security incident): two admins, read only, at most two hours. */
+export type SupportBreakGlassEvent = PlatformWebhookEvent<'support.break_glass', { object: SupportAccessGrantEventObject }>;
+
 export type PlatformControlEvent =
   | PaymentRequestCreatedEvent
   | PaymentRequestUpdatedEvent
@@ -112,7 +167,15 @@ export type PlatformControlEvent =
   | QuotaReachedEvent
   | TaxAuthorisationGrantedEvent
   | TaxAuthorisationRevokedEvent
-  | CompanyRequirementsUpdatedEvent;
+  | CompanyRequirementsUpdatedEvent
+  | SupportRequestedEvent
+  | SupportEscalationCreatedEvent
+  | SupportEscalationUpdatedEvent
+  | SupportAccessRequestedEvent
+  | SupportAccessGrantedEvent
+  | SupportAccessRevokedEvent
+  | SupportAccessExpiredEvent
+  | SupportBreakGlassEvent;
 
 const CONTROL_EVENT_TYPES: ReadonlySet<string> = new Set([
   'payment_request.created',
@@ -132,6 +195,14 @@ const CONTROL_EVENT_TYPES: ReadonlySet<string> = new Set([
   'tax_authorisation.granted',
   'tax_authorisation.revoked',
   'company.requirements.updated',
+  'support.requested',
+  'support.escalation.created',
+  'support.escalation.updated',
+  'support.access_requested',
+  'support.access_granted',
+  'support.access_revoked',
+  'support.access_expired',
+  'support.break_glass',
 ]);
 
 /** Narrows an event from `webhooks.constructPlatformEvent` to the Wave 4 control-surface events. */
