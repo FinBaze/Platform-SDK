@@ -45,6 +45,7 @@ import {
   Upserts,
   WebhookEndpoints,
 } from './data.js';
+import { Messages } from './messages.js';
 
 type Role = 'admin' | 'member' | 'viewer';
 
@@ -332,6 +333,7 @@ export class PlatformNamespace {
   readonly flowTemplates: FlowTemplates;
   readonly events: Events;
   readonly webhookEndpoints: WebhookEndpoints;
+  readonly messages: Messages;
   readonly reports: Reports;
   readonly documents: Documents;
   readonly exports: Exports;
@@ -353,6 +355,7 @@ export class PlatformNamespace {
     this.flowTemplates = new FlowTemplates(http);
     this.events = new Events(http);
     this.webhookEndpoints = new WebhookEndpoints(http);
+    this.messages = new Messages(http);
     this.reports = new Reports(http);
     this.documents = new Documents(http);
     this.exports = new Exports(http);

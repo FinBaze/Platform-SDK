@@ -17,3 +17,20 @@ export type { BulkCreateParams, BulkJobReceipt, CompanyRef, CursorPage, ObjectRe
 export { Webhooks } from './webhooks.js';
 export { OAuth, decodeAccessToken, generatePkce } from './oauth.js';
 export type { OAuthTokens } from './oauth.js';
+export { isMessageEvent } from './messages.js';
+export type {
+  AcknowledgeChannel,
+  AnyMessageObject,
+  MessageCategory,
+  MessageContent,
+  MessageCreatedEvent,
+  MessageData,
+  MessageDataByType,
+  MessageObject,
+  MessagePriority,
+  MessageRouting,
+  MessageType,
+  MessageUnacknowledgedEvent,
+  PlatformMessageEvent,
+} from './messages.js';
+export type { AcknowledgeParams, MessageListParams, MessageSettingsParams, SetRoutingParams } from './resources/platform/messages.js';

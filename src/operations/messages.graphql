@@ -1,0 +1,106 @@
+# Messages (Wave 4.1): the log FinBaze keeps for a platform, acknowledgement, routing policy and settings.
+
+fragment SdkMessageFields on PlatformMessageView {
+  id
+  type
+  category
+  priority
+  status
+  routing
+  routingReason
+  profileId
+  ackRequired
+  ackDeadline
+  acknowledgedAt
+  readAt
+  escalationStage
+  created
+}
+
+fragment SdkMessageRoutingRuleFields on MessageRoutingRuleView {
+  id
+  profileId
+  scope
+  category
+  type
+  routing
+  channels
+  digestWindow
+}
+
+fragment SdkMessageSettingsFields on PlatformMessageSettingsView {
+  digestHourLocal
+  ackTimeoutMinutes
+  criticalAckTimeoutMinutes
+  criticalEmailFallback
+  fallbackAfterMinutes
+  includeEmailHtml
+  quietHoursStart
+  quietHoursEnd
+  quietHoursTimezone
+}
+
+query SdkMessageCatalogue {
+  messageCatalogue {
+    type
+    category
+    audiences
+    priority
+    platformDefault
+    platformMayChange
+    allowedRoutings
+    digestAllowed
+  }
+}
+
+query SdkPlatformMessages($filter: PlatformMessageFilter) {
+  platformMessages(filter: $filter) {
+    ...SdkMessageFields
+  }
+}
+
+mutation SdkAcknowledgeMessage($input: AcknowledgeMessageInput!) {
+  acknowledgeMessage(input: $input) {
+    ...SdkMessageFields
+  }
+}
+
+mutation SdkAcknowledgeMessages($inputs: [AcknowledgeMessageInput!]!) {
+  acknowledgeMessages(inputs: $inputs) {
+    ...SdkMessageFields
+  }
+}
+
+mutation SdkMarkMessageRead($id: ID!) {
+  markMessageRead(id: $id) {
+    ...SdkMessageFields
+  }
+}
+
+query SdkPlatformMessageRouting($profileId: ID) {
+  platformMessageRouting(profileId: $profileId) {
+    ...SdkMessageRoutingRuleFields
+  }
+}
+
+mutation SdkSetPlatformMessageRouting($input: SetMessageRoutingInput!) {
+  setPlatformMessageRouting(input: $input) {
+    ...SdkMessageRoutingRuleFields
+  }
+}
+
+mutation SdkClearPlatformMessageRouting($id: ID!) {
+  clearPlatformMessageRouting(id: $id)
+}
+
+query SdkPlatformMessageSettings {
+  platformMessageSettings {
+    ...SdkMessageSettingsFields
+  }
+}
+
+mutation SdkUpdatePlatformMessageSettings($input: UpdatePlatformMessageSettingsInput!) {
+  updatePlatformMessageSettings(input: $input) {
+    ...SdkMessageSettingsFields
+  }
+}
