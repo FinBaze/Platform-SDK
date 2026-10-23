@@ -4458,6 +4458,8 @@ export type SalesInvoiceSortFields =
 
 export type SalesInvoiceUpsertFields = {
   address?: AddressUpsertFields | null | undefined;
+  /** Makes this a credit note for one of your finalised invoices; it copies that invoice's lines reversed, so give no lines. */
+  creditOf?: ObjectRef | null | undefined;
   currency: Currency;
   /** ISO date, 2026-10-17. */
   date: string;
@@ -4472,7 +4474,8 @@ export type SalesInvoiceUpsertFields = {
   footer?: string | null | undefined;
   lastName?: string | null | undefined;
   legalName?: string | null | undefined;
-  lines: Array<SalesInvoiceLineUpsertFields>;
+  /** Give lines, or creditOf for a credit note. */
+  lines?: Array<SalesInvoiceLineUpsertFields> | null | undefined;
   memo?: string | null | undefined;
   reference?: string | null | undefined;
   relation?: ObjectRef | null | undefined;
