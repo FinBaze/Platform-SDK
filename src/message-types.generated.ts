@@ -2,7 +2,7 @@
 
 export type MessageCategory = "account_security" | "tax_deadlines" | "documents" | "approvals" | "sales_correspondence" | "payroll_correspondence" | "ai_agents" | "billing" | "lifecycle_marketing" | "banking" | "insights" | "firm_relations" | "custom" | "internal";
 
-export type MessageType = "account.email_verification" | "account.membership_invite" | "account.password_reset" | "agents.task_budget_exhausted" | "agents.task_completed" | "agents.task_failed" | "agents.task_waiting_approval" | "agents.task_waiting_input" | "approvals.pay_run_ready" | "assistant.inbound_reply" | "banking.lunchflow_consent" | "billing.firm_client_plan_activated" | "billing.firm_client_plan_cancelled" | "billing.firm_client_subscription_cancelled" | "billing.payroll_addon_enabled" | "billing.plan_upgrade_request" | "custom.automation_email" | "custom.automation_whatsapp" | "custom.notification" | "documents.inbound_unsorted" | "documents.receipt_missing" | "documents.received_available" | "documents.request_digest" | "documents.request_reminder" | "firm.client_connect_invite" | "firm.client_hmrc_removal_notice" | "firm.client_onboarding_invite" | "firm.client_transferred_away" | "insights.budget_run_rate_digest" | "internal.plan_subscribed" | "lifecycle.founder_checkin" | "lifecycle.onboarding_resume" | "lifecycle.plan_welcome" | "lifecycle.platform_onboarding_invite" | "lifecycle.practice_invoice" | "lifecycle.setup_step" | "payroll.payslip_available" | "payroll.year_document_available" | "sales.invoice_payment_failed" | "sales.invoice_payment_received" | "sales.invoice_sent" | "sales.quote_sent" | "sales.recurring_invoice" | "sales.reminder_sent" | "tax.deadline_upcoming" | "tax.filing_accepted" | "tax.filing_ready" | "tax.filing_rejected" | "tax.threshold_approaching" | "tax.threshold_exceeded";
+export type MessageType = "account.email_verification" | "account.membership_invite" | "account.password_reset" | "agents.task_budget_exhausted" | "agents.task_completed" | "agents.task_failed" | "agents.task_waiting_approval" | "agents.task_waiting_input" | "approvals.pay_run_ready" | "assistant.inbound_reply" | "banking.lunchflow_consent" | "billing.firm_client_plan_activated" | "billing.firm_client_plan_cancelled" | "billing.firm_client_subscription_cancelled" | "billing.payroll_addon_enabled" | "billing.plan_upgrade_request" | "custom.automation_email" | "custom.automation_whatsapp" | "custom.notification" | "documents.inbound_unsorted" | "documents.receipt_missing" | "documents.received_available" | "documents.request_digest" | "documents.request_reminder" | "firm.client_connect_invite" | "firm.client_hmrc_removal_notice" | "firm.client_onboarding_invite" | "firm.client_transferred_away" | "insights.budget_run_rate_digest" | "internal.plan_subscribed" | "lifecycle.founder_checkin" | "lifecycle.onboarding_resume" | "lifecycle.plan_welcome" | "lifecycle.platform_onboarding_invite" | "lifecycle.practice_invoice" | "lifecycle.setup_step" | "payroll.payslip_available" | "payroll.year_document_available" | "sales.invoice_payment_failed" | "sales.invoice_payment_received" | "sales.invoice_sent" | "sales.quote_sent" | "sales.recurring_invoice" | "sales.reminder_sent" | "tax_authorisation.revoked" | "tax.deadline_upcoming" | "tax.filing_accepted" | "tax.filing_ready" | "tax.filing_rejected" | "tax.threshold_approaching" | "tax.threshold_exceeded";
 
 /** `account.email_verification` (account_security, critical). */
 export type AccountEmailVerificationData = {
@@ -327,6 +327,14 @@ export type SalesReminderSentData = {
   entityId: string;
 };
 
+/** `tax_authorisation.revoked` (tax_deadlines, normal). */
+export type TaxAuthorisationRevokedData = {
+  companyId: string;
+  taxes: Array<string>;
+  revokedVia?: string | null;
+  language: string;
+};
+
 /** `tax.deadline_upcoming` (tax_deadlines, normal). */
 export type TaxDeadlineUpcomingData = {
   filingId: string;
@@ -416,6 +424,7 @@ export interface MessageDataByType {
   "sales.quote_sent": SalesQuoteSentData;
   "sales.recurring_invoice": SalesRecurringInvoiceData;
   "sales.reminder_sent": SalesReminderSentData;
+  "tax_authorisation.revoked": TaxAuthorisationRevokedData;
   "tax.deadline_upcoming": TaxDeadlineUpcomingData;
   "tax.filing_accepted": TaxFilingAcceptedData;
   "tax.filing_ready": TaxFilingReadyData;

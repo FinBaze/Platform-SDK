@@ -50,6 +50,7 @@ import { Extensions } from './extensions.js';
 import { Messages } from './messages.js';
 import { PaymentLinks, PaymentRequests, Providers, StepUp, TaxReservation } from './payments.js';
 import { Policies } from './policies.js';
+import { TaxAuthorisations } from './tax-authorisations.js';
 
 type Role = 'admin' | 'member' | 'viewer';
 
@@ -74,17 +75,17 @@ export type CreateEmbedSessionParams = {
   company: string;
   user: { id: string } | { externalId: string };
   components: {
-    onboarding?: { enabled?: boolean; features?: { editCompany?: boolean; taxSetup?: boolean } };
-    taxAuthorisation?: { enabled?: boolean; features?: { revoke?: boolean; hmrcConnect?: boolean } };
+    onboarding?: { enabled?: boolean; features?: { editCompany?: boolean; taxSetup?: boolean; filingConsent?: boolean } };
+    taxAuthorisation?: { enabled?: boolean; features?: { revoke?: boolean; hmrcConnect?: boolean; grant?: boolean } };
     notificationBanner?: { enabled?: boolean };
     actionCentre?: { enabled?: boolean };
     transactions?: { enabled?: boolean; features?: { categorise?: boolean; split?: boolean; attachReceipt?: boolean; matchInvoices?: boolean; aiSuggestions?: boolean } };
     transactionDetail?: { enabled?: boolean; features?: { categorise?: boolean; split?: boolean; attachReceipt?: boolean; matchInvoices?: boolean; aiSuggestions?: boolean } };
     purchaseInbox?: { enabled?: boolean; features?: { upload?: boolean; approve?: boolean; emailForwarding?: boolean } };
     taxCalendar?: { enabled?: boolean };
-    vatReturn?: { enabled?: boolean; features?: { submit?: boolean; payment?: boolean; suppletie?: boolean } };
-    icpReturn?: { enabled?: boolean; features?: { submit?: boolean } };
-    ossReturn?: { enabled?: boolean; features?: { submit?: boolean } };
+    vatReturn?: { enabled?: boolean; features?: { submit?: boolean; payment?: boolean; suppletie?: boolean; inlineConsent?: boolean } };
+    icpReturn?: { enabled?: boolean; features?: { submit?: boolean; inlineConsent?: boolean } };
+    ossReturn?: { enabled?: boolean; features?: { submit?: boolean; inlineConsent?: boolean } };
     taxPayments?: { enabled?: boolean; features?: { paymentHandoff?: boolean; internetkassa?: boolean } };
     bookingChip?: { enabled?: boolean; features?: { edit?: boolean } };
     receiptButton?: { enabled?: boolean };
@@ -346,6 +347,8 @@ export class PlatformNamespace {
   readonly stepUp: StepUp;
   /** Policies (Wave 4.6). */
   readonly policies: Policies;
+  /** Filing consent (Wave 5.1): what the companies authorised FinBaze to file. Read and revoke only; there is no grant. */
+  readonly taxAuthorisations: TaxAuthorisations;
   /** Custom actions, slots, links, custom fields and field control (Wave 4.7). */
   readonly extensions: Extensions;
   /** Document layouts, templates, partner rendering, fonts and custom domains (Wave 4.3, 4.4). */
@@ -382,6 +385,7 @@ export class PlatformNamespace {
     this.taxReservation = new TaxReservation(http);
     this.stepUp = new StepUp(http);
     this.policies = new Policies(http);
+    this.taxAuthorisations = new TaxAuthorisations(http);
     this.extensions = new Extensions(http);
     this.documentLayouts = new DocumentLayouts(http);
     this.documentTemplates = new DocumentTemplates(http);

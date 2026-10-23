@@ -75,6 +75,26 @@ export type CustomActionInvokedEvent = PlatformWebhookEvent<'custom_action.invok
 export type PolicyActivatedEvent = PlatformWebhookEvent<'policy.activated', { object: EventObject<Record<string, unknown>> }>;
 export type QuotaReachedEvent = PlatformWebhookEvent<'quota.reached', { object: EventObject<Record<string, unknown>> }>;
 
+/**
+ * A company's user authorised FinBaze to file the listed taxes, or the authorisation was revoked (Wave 5.1).
+ * `channel` is how: `embed` or `headless` for a grant; also `platform`, `admin` or `lifecycle` for a revoke.
+ * No IP address or user agent: those stay in the audit log.
+ */
+export type TaxAuthorisationEventObject = {
+  __typename: 'Event';
+  id: string | null;
+  companyId: string;
+  taxes: Array<'nl_vat' | 'nl_icp' | 'nl_oss' | 'nl_cit' | 'nl_annual_accounts' | 'nl_wage_tax' | 'nl_pension' | 'uk_vat' | 'uk_income_tax'>;
+  channel: 'embed' | 'headless' | 'platform' | 'admin' | 'lifecycle';
+  stepUp: boolean;
+  at: string;
+};
+export type TaxAuthorisationGrantedEvent = PlatformWebhookEvent<'tax_authorisation.granted', { object: TaxAuthorisationEventObject }>;
+export type TaxAuthorisationRevokedEvent = PlatformWebhookEvent<'tax_authorisation.revoked', { object: TaxAuthorisationEventObject }>;
+
+/** What a company still has to provide changed. `data.object` is the company; `data.details.reason` says why (`tax_authorisation`). Read `platform.companies.requirements(id)`. */
+export type CompanyRequirementsUpdatedEvent = PlatformWebhookEvent<'company.requirements.updated', { object: Record<string, unknown>; details?: { reason?: string } }>;
+
 export type PlatformControlEvent =
   | PaymentRequestCreatedEvent
   | PaymentRequestUpdatedEvent
@@ -89,7 +109,10 @@ export type PlatformControlEvent =
   | CustomDomainStatusChangedEvent
   | CustomActionInvokedEvent
   | PolicyActivatedEvent
-  | QuotaReachedEvent;
+  | QuotaReachedEvent
+  | TaxAuthorisationGrantedEvent
+  | TaxAuthorisationRevokedEvent
+  | CompanyRequirementsUpdatedEvent;
 
 const CONTROL_EVENT_TYPES: ReadonlySet<string> = new Set([
   'payment_request.created',
@@ -106,6 +129,9 @@ const CONTROL_EVENT_TYPES: ReadonlySet<string> = new Set([
   'custom_action.invoked',
   'policy.activated',
   'quota.reached',
+  'tax_authorisation.granted',
+  'tax_authorisation.revoked',
+  'company.requirements.updated',
 ]);
 
 /** Narrows an event from `webhooks.constructPlatformEvent` to the Wave 4 control-surface events. */

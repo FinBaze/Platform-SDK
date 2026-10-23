@@ -1,0 +1,45 @@
+# Filing consent (Wave 5.1): the company's authorisation for FinBaze to file its returns.
+# There is no grant here: only the company's own user can consent, in an embed or headless session.
+
+fragment SdkTaxAuthorisationFields on TaxAuthorisation {
+  id
+  companyId
+  taxes
+  statementVersion
+  locale
+  channel
+  grantedAt
+  stepUp
+  revokedAt
+  revokedVia
+  supersedesId
+  grantedBy {
+    id
+    externalUserId
+    firstName
+    lastName
+  }
+}
+
+query SdkTaxAuthorisations($companyId: ID!, $includeRevoked: Boolean) {
+  taxAuthorisations(companyId: $companyId, includeRevoked: $includeRevoked) {
+    ...SdkTaxAuthorisationFields
+  }
+}
+
+query SdkTaxAuthorisationStatus($companyId: ID!) {
+  taxAuthorisationStatus(companyId: $companyId) {
+    tax
+    state
+    firmName
+    authorisation {
+      ...SdkTaxAuthorisationFields
+    }
+  }
+}
+
+mutation SdkRevokeTaxAuthorisation($input: RevokeTaxAuthorisationInput!) {
+  revokeTaxAuthorisation(input: $input) {
+    ...SdkTaxAuthorisationFields
+  }
+}

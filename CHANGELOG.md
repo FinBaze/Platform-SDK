@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+Wave 5.1: filing consent.
+
+- **`platform.taxAuthorisations`.** `list(companyId, { includeRevoked })`, `status(companyId)` (per tax: `active`, `missing`, `reconfirmation_due`, `delegated_to_firm`) and `revoke(companyId, { taxes, reason })`. There is no `grant`: only the company's own user can consent, in an embed or headless session.
+- **Events.** `tax_authorisation.granted`, `tax_authorisation.revoked` and `company.requirements.updated` join `PlatformControlEvent` (`TaxAuthorisationGrantedEvent`, `TaxAuthorisationRevokedEvent`, `CompanyRequirementsUpdatedEvent`).
+- **Messages.** The type `tax_authorisation.revoked` (`MessageData<'tax_authorisation.revoked'>`): FinBaze sends nothing itself, route it like any other.
+- **Embed sessions.** `components.onboarding.features.filingConsent`, `components.taxAuthorisation.features.grant` and `inlineConsent` on `vatReturn`, `icpReturn` and `ossReturn`.
+
 Wave 4.1: messages.
 
 - **`platform.messages.*`.** `list` (offset paging), `acknowledge`, `acknowledgeMany`, `markRead`, `resend`, `catalogue`, `routing.list/set/clear` and `settings.retrieve/update`.

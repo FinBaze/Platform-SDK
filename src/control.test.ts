@@ -219,3 +219,58 @@ describe('control events', () => {
     expect(isControlEvent({ ...base, type: 'company.created', data: {} } as unknown as PlatformWebhookEvent)).toBe(false);
   });
 });
+
+describe('tax authorisations (filing consent)', () => {
+  const grant = { id: 'a1', companyId: 'c1', taxes: ['nl_vat'], channel: 'embed', stepUp: false, revokedAt: null };
+
+  it('lists the history of a company, with revoked grants only on request', async () => {
+    const s = server(() => ({ taxAuthorisations: [grant] }));
+    const platform = client(s).platform;
+    expect(await platform.taxAuthorisations.list('c1')).toEqual([grant]);
+    await platform.taxAuthorisations.list('c1', { includeRevoked: true });
+    expect(api(s.calls).map((c) => vars(c))).toEqual([
+      { companyId: 'c1', includeRevoked: false },
+      { companyId: 'c1', includeRevoked: true },
+    ]);
+  });
+
+  it('reads where each tax stands', async () => {
+    const s = server(() => ({ taxAuthorisationStatus: [{ tax: 'nl_vat', state: 'missing', firmName: null, authorisation: null }] }));
+    const rows = await client(s).platform.taxAuthorisations.status('c1');
+    expect(rows[0]).toMatchObject({ tax: 'nl_vat', state: 'missing' });
+    expect(vars(api(s.calls)[0]!)).toEqual({ companyId: 'c1' });
+  });
+
+  it('revokes some taxes or all, with a reason', async () => {
+    const s = server(() => ({ revokeTaxAuthorisation: [{ ...grant, revokedAt: '2026-11-04T10:00:00Z' }] }));
+    const platform = client(s).platform;
+    const revoked = await platform.taxAuthorisations.revoke('c1', { taxes: ['nl_vat'], reason: 'offboarding' });
+    expect(revoked[0]!.revokedAt).toBe('2026-11-04T10:00:00Z');
+    await platform.taxAuthorisations.revoke('c1');
+    expect(api(s.calls).map((c) => vars(c).input)).toEqual([
+      { companyId: 'c1', taxes: ['nl_vat'], reason: 'offboarding' },
+      { companyId: 'c1' },
+    ]);
+  });
+
+  it('has no grant: only the company’s own user can consent', () => {
+    const taxAuthorisations = client(server(() => ({}))).platform.taxAuthorisations as unknown as Record<string, unknown>;
+    expect(taxAuthorisations.grant).toBeUndefined();
+  });
+
+  it('narrows the consent events and the requirements event', () => {
+    const base = { id: 'evt_1', object: 'event', apiVersion: '2026-11-01', created: '', occurredAt: '', sequence: '1', livemode: false, platform: 'plt_1', company: 'c1' };
+    const granted = {
+      ...base,
+      type: 'tax_authorisation.granted',
+      data: { object: { __typename: 'Event', id: 'a1', companyId: 'c1', taxes: ['nl_vat'], channel: 'embed', stepUp: true, at: '2026-11-04T10:00:00Z' } },
+    } as unknown as PlatformWebhookEvent;
+    expect(isControlEvent(granted)).toBe(true);
+    if (isControlEvent(granted) && granted.type === 'tax_authorisation.granted') {
+      expect(granted.data.object.taxes).toEqual(['nl_vat']);
+      expect(granted.data.object.stepUp).toBe(true);
+    }
+    expect(isControlEvent({ ...base, type: 'tax_authorisation.revoked', data: {} } as unknown as PlatformWebhookEvent)).toBe(true);
+    expect(isControlEvent({ ...base, type: 'company.requirements.updated', data: {} } as unknown as PlatformWebhookEvent)).toBe(true);
+  });
+});

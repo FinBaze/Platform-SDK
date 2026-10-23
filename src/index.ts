@@ -51,8 +51,13 @@ export type {
   PlatformControlEvent,
   PolicyActivatedEvent,
   QuotaReachedEvent,
+  CompanyRequirementsUpdatedEvent,
   StepUpRequiredEvent,
+  TaxAuthorisationEventObject,
+  TaxAuthorisationGrantedEvent,
+  TaxAuthorisationRevokedEvent,
   TaxReservationAdvisedEvent,
 } from './control-events.js';
+export type { TaxAuthorisations } from './resources/platform/tax-authorisations.js';
 export { signStepUp } from './step-up.js';
 export type { SignStepUpParams, StepUpAlgorithm, StepUpChallengeInput } from './step-up.js';
