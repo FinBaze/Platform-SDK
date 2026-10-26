@@ -58,6 +58,7 @@ export type AuthorisedTax =
   | 'nl_pension'
   | 'nl_vat'
   | 'nl_wage_tax'
+  | 'uk_annual_accounts'
   | 'uk_income_tax'
   | 'uk_vat';
 
@@ -622,9 +623,13 @@ export type CreateCostCenterInput = {
 export type CreateEmbedSessionInput = {
   companyId: string | number;
   components: EmbedSessionComponentsInput;
+  /** Binds the session to one employee of the company so they can read their own payslips. Only with a server token; the session may then hold payslip-viewer (and contact-support) and nothing else. The user is not made a member of the company. */
+  employee?: EmbedEmployeeBindingInput | null | undefined;
   kind?: EmbedSessionKind;
   /** nl-NL | en-NL | en-GB | en-US. Defaults to the company language. */
   locale?: string | null | undefined;
+  /** fb_app_… of a registered mobile app (platformMobileApps). The session is then exchanged only by that app (embed kind, no origin). */
+  mobileAppId?: string | number | null | undefined;
   /** One of the platform's allowed origins; the session then only works there. */
   origin?: string | null | undefined;
   /** Previous session id from the same mount (sent by the SDK on refresh). */
@@ -685,6 +690,7 @@ export type CreateMonetaryAccountInput = {
 export type CreateMonetaryAccountPaymentInput = {
   amount: number;
   bic?: string | null | undefined;
+  costCenterId?: string | null | undefined;
   createdById?: string | null | undefined;
   currentAccountId?: string | null | undefined;
   date: string;
@@ -1250,6 +1256,61 @@ export type EmbedAccountantConnectFeaturesInput = {
   invite?: boolean | null | undefined;
 };
 
+export type EmbedAgentTasksComponentInput = {
+  enabled?: boolean;
+  features?: EmbedAgentTasksFeaturesInput | null | undefined;
+};
+
+export type EmbedAgentTasksFeaturesInput = {
+  approve?: boolean | null | undefined;
+  create?: boolean | null | undefined;
+  manage?: boolean | null | undefined;
+};
+
+export type EmbedAnnualAccountsComponentInput = {
+  enabled?: boolean;
+  features?: EmbedAnnualAccountsFeaturesInput | null | undefined;
+};
+
+export type EmbedAnnualAccountsFeaturesInput = {
+  approve?: boolean | null | undefined;
+  edit?: boolean | null | undefined;
+  inlineConsent?: boolean | null | undefined;
+  submit?: boolean | null | undefined;
+};
+
+export type EmbedAutomationsComponentInput = {
+  enabled?: boolean;
+  features?: EmbedAutomationsFeaturesInput | null | undefined;
+};
+
+export type EmbedAutomationsFeaturesInput = {
+  edit?: boolean | null | undefined;
+  toggle?: boolean | null | undefined;
+};
+
+export type EmbedBankConnectionsComponentInput = {
+  enabled?: boolean;
+  features?: EmbedBankConnectionsFeaturesInput | null | undefined;
+};
+
+export type EmbedBankConnectionsFeaturesInput = {
+  connect?: boolean | null | undefined;
+  disconnect?: boolean | null | undefined;
+};
+
+export type EmbedBankRulesComponentInput = {
+  enabled?: boolean;
+  features?: EmbedBankRulesFeaturesInput | null | undefined;
+};
+
+export type EmbedBankRulesFeaturesInput = {
+  apply?: boolean | null | undefined;
+  create?: boolean | null | undefined;
+  delete?: boolean | null | undefined;
+  edit?: boolean | null | undefined;
+};
+
 export type EmbedBasicComponentInput = {
   enabled?: boolean;
 };
@@ -1263,18 +1324,92 @@ export type EmbedBookingChipFeaturesInput = {
   edit?: boolean | null | undefined;
 };
 
+export type EmbedCitReturnComponentInput = {
+  enabled?: boolean;
+  features?: EmbedCitReturnFeaturesInput | null | undefined;
+};
+
+export type EmbedCitReturnFeaturesInput = {
+  inlineConsent?: boolean | null | undefined;
+  submit?: boolean | null | undefined;
+};
+
+export type EmbedCompanySettingsComponentInput = {
+  enabled?: boolean;
+  features?: EmbedCompanySettingsFeaturesInput | null | undefined;
+};
+
+export type EmbedCompanySettingsFeaturesInput = {
+  editCompany?: boolean | null | undefined;
+  financialYears?: boolean | null | undefined;
+};
+
 export type EmbedComponent =
+  | 'accountant_badge'
   | 'accountant_connect'
   | 'action_centre'
+  | 'agent_tasks'
+  | 'annual_accounts'
+  | 'approval_button'
+  | 'assets'
+  | 'assistant'
+  | 'automations'
+  | 'bank_connections'
+  | 'bank_rules'
   | 'booking_chip'
+  | 'cash_runway_tile'
+  | 'category_picker'
+  | 'cit_return'
+  | 'company_search'
+  | 'company_settings'
   | 'company_transfer'
   | 'contact_support'
+  | 'cost_centers'
+  | 'customer_picker'
+  | 'customers'
+  | 'dashboard'
+  | 'data_export'
+  | 'document_requests'
+  | 'employees'
+  | 'engagement_card'
+  | 'feed_status'
+  | 'file_now_button'
+  | 'general_ledger'
   | 'icp_return'
+  | 'insights'
+  | 'invoice_editor'
+  | 'invoice_pdf_preview'
+  | 'invoice_status_badge'
+  | 'journal'
+  | 'ledger_account_picker'
+  | 'loans'
   | 'notification_banner'
   | 'onboarding'
+  | 'onboarding_progress'
   | 'oss_return'
+  | 'pay_runs'
+  | 'payment_batches'
+  | 'payroll_filings'
+  | 'payslip_viewer'
+  | 'period_picker'
+  | 'product_tax_code_picker'
+  | 'products'
+  | 'profit_tile'
+  | 'projects'
   | 'purchase_inbox'
+  | 'purchase_invoices'
+  | 'quotes'
   | 'receipt_button'
+  | 'receipt_dropzone'
+  | 'reconciliation'
+  | 'recurring_invoices'
+  | 'reminders'
+  | 'reports'
+  | 'requirements_checklist'
+  | 'revenue_tile'
+  | 'sales_invoices'
+  | 'suite'
+  | 'suppliers'
   | 'support_access'
   | 'tax_authorisation'
   | 'tax_calendar'
@@ -1282,7 +1417,99 @@ export type EmbedComponent =
   | 'tax_payments'
   | 'transaction_detail'
   | 'transactions'
-  | 'vat_return';
+  | 'uk_itsa'
+  | 'us_1120'
+  | 'users_and_access'
+  | 'vat_code_picker'
+  | 'vat_reservation_meter'
+  | 'vat_return'
+  | 'vehicles'
+  | 'year_end';
+
+export type EmbedCostCentersComponentInput = {
+  enabled?: boolean;
+  features?: EmbedCostCentersFeaturesInput | null | undefined;
+};
+
+export type EmbedCostCentersFeaturesInput = {
+  create?: boolean | null | undefined;
+  edit?: boolean | null | undefined;
+};
+
+export type EmbedCustomersComponentInput = {
+  enabled?: boolean;
+  features?: EmbedCustomersFeaturesInput | null | undefined;
+};
+
+export type EmbedCustomersFeaturesInput = {
+  create?: boolean | null | undefined;
+  edit?: boolean | null | undefined;
+};
+
+export type EmbedDataExportComponentInput = {
+  enabled?: boolean;
+  features?: EmbedDataExportFeaturesInput | null | undefined;
+};
+
+export type EmbedDataExportFeaturesInput = {
+  request?: boolean | null | undefined;
+};
+
+export type EmbedDocumentRequestsComponentInput = {
+  enabled?: boolean;
+  features?: EmbedDocumentRequestsFeaturesInput | null | undefined;
+};
+
+export type EmbedDocumentRequestsFeaturesInput = {
+  respond?: boolean | null | undefined;
+  upload?: boolean | null | undefined;
+};
+
+export type EmbedEmployeeBindingInput = {
+  /** The id your platform gave the employee (`externalId`). */
+  employeeExternalId?: string | null | undefined;
+  /** Exactly one of the two. */
+  employeeId?: string | number | null | undefined;
+};
+
+export type EmbedEmployeesComponentInput = {
+  enabled?: boolean;
+  features?: EmbedEmployeesFeaturesInput | null | undefined;
+};
+
+export type EmbedEmployeesFeaturesInput = {
+  create?: boolean | null | undefined;
+  edit?: boolean | null | undefined;
+};
+
+export type EmbedEngagementCardComponentInput = {
+  enabled?: boolean;
+  features?: EmbedEngagementCardFeaturesInput | null | undefined;
+};
+
+export type EmbedEngagementCardFeaturesInput = {
+  end?: boolean | null | undefined;
+};
+
+export type EmbedInvoiceEditorComponentInput = {
+  enabled?: boolean;
+  features?: EmbedInvoiceEditorFeaturesInput | null | undefined;
+};
+
+export type EmbedInvoiceEditorFeaturesInput = {
+  save?: boolean | null | undefined;
+  send?: boolean | null | undefined;
+};
+
+export type EmbedJournalComponentInput = {
+  enabled?: boolean;
+  features?: EmbedJournalFeaturesInput | null | undefined;
+};
+
+export type EmbedJournalFeaturesInput = {
+  create?: boolean | null | undefined;
+  delete?: boolean | null | undefined;
+};
 
 export type EmbedOnboardingComponentInput = {
   enabled?: boolean;
@@ -1293,6 +1520,50 @@ export type EmbedOnboardingFeaturesInput = {
   editCompany?: boolean | null | undefined;
   filingConsent?: boolean | null | undefined;
   taxSetup?: boolean | null | undefined;
+};
+
+export type EmbedPayRunsComponentInput = {
+  enabled?: boolean;
+  features?: EmbedPayRunsFeaturesInput | null | undefined;
+};
+
+export type EmbedPayRunsFeaturesInput = {
+  approve?: boolean | null | undefined;
+  calculate?: boolean | null | undefined;
+  create?: boolean | null | undefined;
+  filings?: boolean | null | undefined;
+  finalise?: boolean | null | undefined;
+  paymentHandoff?: boolean | null | undefined;
+};
+
+export type EmbedPaymentBatchesComponentInput = {
+  enabled?: boolean;
+  features?: EmbedPaymentBatchesFeaturesInput | null | undefined;
+};
+
+export type EmbedPaymentBatchesFeaturesInput = {
+  requestPayment?: boolean | null | undefined;
+};
+
+export type EmbedPayrollFilingsComponentInput = {
+  enabled?: boolean;
+  features?: EmbedPayrollFilingsFeaturesInput | null | undefined;
+};
+
+export type EmbedPayrollFilingsFeaturesInput = {
+  inlineConsent?: boolean | null | undefined;
+  prepare?: boolean | null | undefined;
+  submit?: boolean | null | undefined;
+};
+
+export type EmbedPayslipViewerComponentInput = {
+  enabled?: boolean;
+  features?: EmbedPayslipViewerFeaturesInput | null | undefined;
+};
+
+export type EmbedPayslipViewerFeaturesInput = {
+  download?: boolean | null | undefined;
+  yearDocuments?: boolean | null | undefined;
 };
 
 export type EmbedPurchaseInboxComponentInput = {
@@ -1306,18 +1577,131 @@ export type EmbedPurchaseInboxFeaturesInput = {
   upload?: boolean | null | undefined;
 };
 
+export type EmbedPurchaseInvoicesComponentInput = {
+  enabled?: boolean;
+  features?: EmbedPurchaseInvoicesFeaturesInput | null | undefined;
+};
+
+export type EmbedPurchaseInvoicesFeaturesInput = {
+  confirm?: boolean | null | undefined;
+};
+
+export type EmbedQuotesComponentInput = {
+  enabled?: boolean;
+  features?: EmbedQuotesFeaturesInput | null | undefined;
+};
+
+export type EmbedQuotesFeaturesInput = {
+  convert?: boolean | null | undefined;
+  send?: boolean | null | undefined;
+};
+
+export type EmbedRecurringInvoicesComponentInput = {
+  enabled?: boolean;
+  features?: EmbedRecurringInvoicesFeaturesInput | null | undefined;
+};
+
+export type EmbedRecurringInvoicesFeaturesInput = {
+  activate?: boolean | null | undefined;
+};
+
+export type EmbedRemindersComponentInput = {
+  enabled?: boolean;
+  features?: EmbedRemindersFeaturesInput | null | undefined;
+};
+
+export type EmbedRemindersFeaturesInput = {
+  close?: boolean | null | undefined;
+  send?: boolean | null | undefined;
+};
+
+export type EmbedReportsComponentInput = {
+  enabled?: boolean;
+  features?: EmbedReportsFeaturesInput | null | undefined;
+};
+
+export type EmbedReportsFeaturesInput = {
+  export?: boolean | null | undefined;
+};
+
+export type EmbedSalesInvoicesComponentInput = {
+  enabled?: boolean;
+  features?: EmbedSalesInvoicesFeaturesInput | null | undefined;
+};
+
+export type EmbedSalesInvoicesFeaturesInput = {
+  create?: boolean | null | undefined;
+  credit?: boolean | null | undefined;
+  export?: boolean | null | undefined;
+  send?: boolean | null | undefined;
+};
+
 export type EmbedSessionComponentsInput = {
+  accountantBadge?: EmbedBasicComponentInput | null | undefined;
   accountantConnect?: EmbedAccountantConnectComponentInput | null | undefined;
   actionCentre?: EmbedBasicComponentInput | null | undefined;
+  agentTasks?: EmbedAgentTasksComponentInput | null | undefined;
+  annualAccounts?: EmbedAnnualAccountsComponentInput | null | undefined;
+  approvalButton?: EmbedBasicComponentInput | null | undefined;
+  assets?: EmbedBasicComponentInput | null | undefined;
+  assistant?: EmbedBasicComponentInput | null | undefined;
+  automations?: EmbedAutomationsComponentInput | null | undefined;
+  bankConnections?: EmbedBankConnectionsComponentInput | null | undefined;
+  bankRules?: EmbedBankRulesComponentInput | null | undefined;
   bookingChip?: EmbedBookingChipComponentInput | null | undefined;
+  cashRunwayTile?: EmbedBasicComponentInput | null | undefined;
+  categoryPicker?: EmbedBasicComponentInput | null | undefined;
+  citReturn?: EmbedCitReturnComponentInput | null | undefined;
+  companySearch?: EmbedBasicComponentInput | null | undefined;
+  companySettings?: EmbedCompanySettingsComponentInput | null | undefined;
   companyTransfer?: EmbedBasicComponentInput | null | undefined;
   contactSupport?: EmbedBasicComponentInput | null | undefined;
+  costCenters?: EmbedCostCentersComponentInput | null | undefined;
+  customerPicker?: EmbedBasicComponentInput | null | undefined;
+  customers?: EmbedCustomersComponentInput | null | undefined;
+  dashboard?: EmbedBasicComponentInput | null | undefined;
+  dataExport?: EmbedDataExportComponentInput | null | undefined;
+  documentRequests?: EmbedDocumentRequestsComponentInput | null | undefined;
+  employees?: EmbedEmployeesComponentInput | null | undefined;
+  engagementCard?: EmbedEngagementCardComponentInput | null | undefined;
+  feedStatus?: EmbedBasicComponentInput | null | undefined;
+  fileNowButton?: EmbedBasicComponentInput | null | undefined;
+  generalLedger?: EmbedBasicComponentInput | null | undefined;
   icpReturn?: EmbedSubmitComponentInput | null | undefined;
+  insights?: EmbedBasicComponentInput | null | undefined;
+  invoiceEditor?: EmbedInvoiceEditorComponentInput | null | undefined;
+  invoicePdfPreview?: EmbedBasicComponentInput | null | undefined;
+  invoiceStatusBadge?: EmbedBasicComponentInput | null | undefined;
+  journal?: EmbedJournalComponentInput | null | undefined;
+  ledgerAccountPicker?: EmbedBasicComponentInput | null | undefined;
+  loans?: EmbedBasicComponentInput | null | undefined;
   notificationBanner?: EmbedBasicComponentInput | null | undefined;
   onboarding?: EmbedOnboardingComponentInput | null | undefined;
+  onboardingProgress?: EmbedBasicComponentInput | null | undefined;
   ossReturn?: EmbedSubmitComponentInput | null | undefined;
+  payRuns?: EmbedPayRunsComponentInput | null | undefined;
+  paymentBatches?: EmbedPaymentBatchesComponentInput | null | undefined;
+  payrollFilings?: EmbedPayrollFilingsComponentInput | null | undefined;
+  payslipViewer?: EmbedPayslipViewerComponentInput | null | undefined;
+  periodPicker?: EmbedBasicComponentInput | null | undefined;
+  productTaxCodePicker?: EmbedBasicComponentInput | null | undefined;
+  products?: EmbedBasicComponentInput | null | undefined;
+  profitTile?: EmbedBasicComponentInput | null | undefined;
+  projects?: EmbedBasicComponentInput | null | undefined;
   purchaseInbox?: EmbedPurchaseInboxComponentInput | null | undefined;
+  purchaseInvoices?: EmbedPurchaseInvoicesComponentInput | null | undefined;
+  quotes?: EmbedQuotesComponentInput | null | undefined;
   receiptButton?: EmbedBasicComponentInput | null | undefined;
+  receiptDropzone?: EmbedBasicComponentInput | null | undefined;
+  reconciliation?: EmbedBasicComponentInput | null | undefined;
+  recurringInvoices?: EmbedRecurringInvoicesComponentInput | null | undefined;
+  reminders?: EmbedRemindersComponentInput | null | undefined;
+  reports?: EmbedReportsComponentInput | null | undefined;
+  requirementsChecklist?: EmbedBasicComponentInput | null | undefined;
+  revenueTile?: EmbedBasicComponentInput | null | undefined;
+  salesInvoices?: EmbedSalesInvoicesComponentInput | null | undefined;
+  suite?: EmbedSuiteInput | null | undefined;
+  suppliers?: EmbedSuppliersComponentInput | null | undefined;
   supportAccess?: EmbedBasicComponentInput | null | undefined;
   taxAuthorisation?: EmbedTaxAuthorisationComponentInput | null | undefined;
   taxCalendar?: EmbedBasicComponentInput | null | undefined;
@@ -1325,7 +1709,14 @@ export type EmbedSessionComponentsInput = {
   taxPayments?: EmbedTaxPaymentsComponentInput | null | undefined;
   transactionDetail?: EmbedTransactionsComponentInput | null | undefined;
   transactions?: EmbedTransactionsComponentInput | null | undefined;
+  ukItsa?: EmbedUkItsaComponentInput | null | undefined;
+  us1120?: EmbedUs1120ComponentInput | null | undefined;
+  usersAndAccess?: EmbedUsersAndAccessComponentInput | null | undefined;
+  vatCodePicker?: EmbedBasicComponentInput | null | undefined;
+  vatReservationMeter?: EmbedBasicComponentInput | null | undefined;
   vatReturn?: EmbedVatReturnComponentInput | null | undefined;
+  vehicles?: EmbedVehiclesComponentInput | null | undefined;
+  yearEnd?: EmbedYearEndComponentInput | null | undefined;
 };
 
 export type EmbedSessionFilterInput = {
@@ -1359,6 +1750,43 @@ export type EmbedSubmitComponentInput = {
 export type EmbedSubmitFeaturesInput = {
   inlineConsent?: boolean | null | undefined;
   submit?: boolean | null | undefined;
+};
+
+export type EmbedSuiteInput = {
+  enabled?: boolean;
+  /** A suite route, for example `sales/sales-invoices` or `sales/sales-invoices/<id>`. */
+  initialRoute?: string | null | undefined;
+  /** `internal` (default): the suite draws its own navigation. `external`: it hides it and emits `navigate`; you drive it. */
+  navigation?: EmbedSuiteNavigation | null | undefined;
+  /** Sections of the suite. Defaults: home, bank, sales, purchases, tax, settings and help on; ledger, payroll and ai off. The token lists only the views of enabled sections whose feature keys the company has. */
+  sections?: EmbedSuiteSectionsInput | null | undefined;
+};
+
+export type EmbedSuiteNavigation =
+  | 'external'
+  | 'internal';
+
+export type EmbedSuiteSectionsInput = {
+  ai?: boolean | null | undefined;
+  bank?: boolean | null | undefined;
+  help?: boolean | null | undefined;
+  home?: boolean | null | undefined;
+  ledger?: boolean | null | undefined;
+  payroll?: boolean | null | undefined;
+  purchases?: boolean | null | undefined;
+  sales?: boolean | null | undefined;
+  settings?: boolean | null | undefined;
+  tax?: boolean | null | undefined;
+};
+
+export type EmbedSuppliersComponentInput = {
+  enabled?: boolean;
+  features?: EmbedSuppliersFeaturesInput | null | undefined;
+};
+
+export type EmbedSuppliersFeaturesInput = {
+  create?: boolean | null | undefined;
+  edit?: boolean | null | undefined;
 };
 
 export type EmbedTaxAuthorisationComponentInput = {
@@ -1395,6 +1823,39 @@ export type EmbedTransactionsFeaturesInput = {
   split?: boolean | null | undefined;
 };
 
+export type EmbedUkItsaComponentInput = {
+  enabled?: boolean;
+  features?: EmbedUkItsaFeaturesInput | null | undefined;
+};
+
+export type EmbedUkItsaFeaturesInput = {
+  hmrcConnect?: boolean | null | undefined;
+  inlineConsent?: boolean | null | undefined;
+  prepare?: boolean | null | undefined;
+  submit?: boolean | null | undefined;
+};
+
+export type EmbedUs1120ComponentInput = {
+  enabled?: boolean;
+  features?: EmbedUs1120FeaturesInput | null | undefined;
+};
+
+export type EmbedUs1120FeaturesInput = {
+  export?: boolean | null | undefined;
+  prepare?: boolean | null | undefined;
+};
+
+export type EmbedUsersAndAccessComponentInput = {
+  enabled?: boolean;
+  features?: EmbedUsersAndAccessFeaturesInput | null | undefined;
+};
+
+export type EmbedUsersAndAccessFeaturesInput = {
+  changeRole?: boolean | null | undefined;
+  invite?: boolean | null | undefined;
+  remove?: boolean | null | undefined;
+};
+
 export type EmbedVatReturnComponentInput = {
   enabled?: boolean;
   features?: EmbedVatReturnFeaturesInput | null | undefined;
@@ -1405,6 +1866,24 @@ export type EmbedVatReturnFeaturesInput = {
   payment?: boolean | null | undefined;
   submit?: boolean | null | undefined;
   suppletie?: boolean | null | undefined;
+};
+
+export type EmbedVehiclesComponentInput = {
+  enabled?: boolean;
+  features?: EmbedVehiclesFeaturesInput | null | undefined;
+};
+
+export type EmbedVehiclesFeaturesInput = {
+  create?: boolean | null | undefined;
+};
+
+export type EmbedYearEndComponentInput = {
+  enabled?: boolean;
+  features?: EmbedYearEndFeaturesInput | null | undefined;
+};
+
+export type EmbedYearEndFeaturesInput = {
+  close?: boolean | null | undefined;
 };
 
 export type EmployeeGenderInput =
@@ -1761,6 +2240,7 @@ export type MonetaryAccountPaymentFilter = {
   and?: Array<MonetaryAccountPaymentFilter> | null | undefined;
   bankReference?: StringFieldComparison | null | undefined;
   bic?: StringFieldComparison | null | undefined;
+  costCenterId?: StringFieldComparison | null | undefined;
   created?: DateFieldComparison | null | undefined;
   createdBy?: MonetaryAccountPaymentFilterAccountFilter | null | undefined;
   createdById?: StringFieldComparison | null | undefined;
@@ -1799,6 +2279,7 @@ export type MonetaryAccountPaymentFilter = {
   salesInvoiceId?: StringFieldComparison | null | undefined;
   settlement?: MonetaryAccountPaymentFilterSettlementFilter | null | undefined;
   settlementId?: StringFieldComparison | null | undefined;
+  spendRequestId?: StringFieldComparison | null | undefined;
   taxFiling?: MonetaryAccountPaymentFilterTaxFilingFilter | null | undefined;
   taxFilingId?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
@@ -1817,7 +2298,6 @@ export type MonetaryAccountPaymentFilterAccountFilter = {
   or?: Array<MonetaryAccountPaymentFilterAccountFilter> | null | undefined;
   phone?: StringFieldComparison | null | undefined;
   picture?: StringFieldComparison | null | undefined;
-  secret?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
 };
 
@@ -2094,6 +2574,7 @@ export type MonetaryAccountPaymentSortFields =
   | 'amount'
   | 'bankReference'
   | 'bic'
+  | 'costCenterId'
   | 'created'
   | 'createdById'
   | 'currentAccountId'
@@ -2119,6 +2600,7 @@ export type MonetaryAccountPaymentSortFields =
   | 'reminderId'
   | 'salesInvoiceId'
   | 'settlementId'
+  | 'spendRequestId'
   | 'taxFilingId'
   | 'updated'
   | 'valueDate';
@@ -2245,6 +2727,7 @@ export type OnboardingRequirementKey =
   | 'tax_nl_vat_authorisation'
   | 'tax_nl_wage_tax_authorisation'
   | 'tax_obligations'
+  | 'tax_uk_annual_accounts_authorisation'
   | 'tax_uk_income_tax_authorisation'
   | 'tax_uk_vat_authorisation'
   | 'tax_uk_vat_hmrc_connection';
@@ -2345,6 +2828,7 @@ export type PaymentRequestStatus =
 export type PermissionSet =
   | 'admin'
   | 'member'
+  | 'requester'
   | 'viewer';
 
 export type PlatformAuditLogFilter = {
@@ -2390,6 +2874,8 @@ export type PlatformDeliveryFilter = {
   companyId?: string | number | null | undefined;
   createdAfter?: string | null | undefined;
   createdBefore?: string | null | undefined;
+  /** Deliveries of events caused by this request id. */
+  requestId?: string | null | undefined;
   status?: Array<string> | null | undefined;
   types?: Array<string> | null | undefined;
 };
@@ -2401,6 +2887,8 @@ export type PlatformEventFilter = {
   createdBefore?: string | null | undefined;
   objectExternalId?: string | null | undefined;
   objectId?: string | number | null | undefined;
+  /** Events caused by this `FinBaze-Request-Id`. */
+  requestId?: string | null | undefined;
   types?: Array<string> | null | undefined;
 };
 
@@ -2516,6 +3004,7 @@ export type PolicyKind =
   | 'filing_policy'
   | 'messaging'
   | 'quotas'
+  | 'records'
   | 'roles_mapping';
 
 export type PolicyStatus =
@@ -2527,8 +3016,10 @@ export type ProcessDocumentCategory =
   | 'company_extract'
   | 'external_sales_invoice'
   | 'other'
+  | 'packing_slip'
   | 'prior_annual_accounts'
   | 'prior_vat_filing'
+  | 'quote'
   | 'received_document';
 
 export type ProcessDocumentCategoryFilterComparison = {
@@ -2563,6 +3054,7 @@ export type ProcessDocumentFilter = {
   entryId?: StringFieldComparison | null | undefined;
   externalId?: StringFieldComparison | null | undefined;
   extractionModel?: StringFieldComparison | null | undefined;
+  goodsReceiptId?: StringFieldComparison | null | undefined;
   id?: IdFilterComparison | null | undefined;
   message?: StringFieldComparison | null | undefined;
   or?: Array<ProcessDocumentFilter> | null | undefined;
@@ -2572,6 +3064,7 @@ export type ProcessDocumentFilter = {
   profileId?: StringFieldComparison | null | undefined;
   purchaseInvoice?: ProcessDocumentFilterPurchaseInvoiceFilter | null | undefined;
   purchaseInvoiceId?: StringFieldComparison | null | undefined;
+  purchaseOrderId?: StringFieldComparison | null | undefined;
   receivedDate?: DateFieldComparison | null | undefined;
   receiverName?: StringFieldComparison | null | undefined;
   receiverRegistrationNumber?: StringFieldComparison | null | undefined;
@@ -2601,7 +3094,6 @@ export type ProcessDocumentFilterAccountFilter = {
   or?: Array<ProcessDocumentFilterAccountFilter> | null | undefined;
   phone?: StringFieldComparison | null | undefined;
   picture?: StringFieldComparison | null | undefined;
-  secret?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
 };
 
@@ -2854,12 +3346,14 @@ export type ProcessDocumentSortFields =
   | 'entryId'
   | 'externalId'
   | 'extractionModel'
+  | 'goodsReceiptId'
   | 'id'
   | 'message'
   | 'processed'
   | 'processing'
   | 'profileId'
   | 'purchaseInvoiceId'
+  | 'purchaseOrderId'
   | 'receivedDate'
   | 'receiverName'
   | 'receiverRegistrationNumber'
@@ -2906,6 +3400,7 @@ export type ProcessDocumentUploadInput = {
 };
 
 export type ProcessMonetaryAccountPaymentInput = {
+  costCenterId?: string | number | null | undefined;
   currentAccountId?: string | number | null | undefined;
   ledgerId?: string | number | null | undefined;
   loanId?: string | number | null | undefined;
@@ -3036,7 +3531,6 @@ export type ProfileFilterAccountFilter = {
   or?: Array<ProfileFilterAccountFilter> | null | undefined;
   phone?: StringFieldComparison | null | undefined;
   picture?: StringFieldComparison | null | undefined;
-  secret?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
 };
 
@@ -3269,7 +3763,6 @@ export type ProjectFilterAccountFilter = {
   or?: Array<ProjectFilterAccountFilter> | null | undefined;
   phone?: StringFieldComparison | null | undefined;
   picture?: StringFieldComparison | null | undefined;
-  secret?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
 };
 
@@ -3493,7 +3986,6 @@ export type PurchaseInvoiceFilterAccountFilter = {
   or?: Array<PurchaseInvoiceFilterAccountFilter> | null | undefined;
   phone?: StringFieldComparison | null | undefined;
   picture?: StringFieldComparison | null | undefined;
-  secret?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
 };
 
@@ -3842,7 +4334,6 @@ export type RecurringFilterAccountFilter = {
   or?: Array<RecurringFilterAccountFilter> | null | undefined;
   phone?: StringFieldComparison | null | undefined;
   picture?: StringFieldComparison | null | undefined;
-  secret?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
 };
 
@@ -4104,7 +4595,6 @@ export type RelationFilterAccountFilter = {
   or?: Array<RelationFilterAccountFilter> | null | undefined;
   phone?: StringFieldComparison | null | undefined;
   picture?: StringFieldComparison | null | undefined;
-  secret?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
 };
 
@@ -4382,7 +4872,6 @@ export type SalesInvoiceFilterAccountFilter = {
   or?: Array<SalesInvoiceFilterAccountFilter> | null | undefined;
   phone?: StringFieldComparison | null | undefined;
   picture?: StringFieldComparison | null | undefined;
-  secret?: StringFieldComparison | null | undefined;
   updated?: DateFieldComparison | null | undefined;
 };
 
@@ -5095,10 +5584,13 @@ export type TestCompanyTemplate =
   | 'nl_bv_payroll'
   | 'nl_eenmanszaak_services'
   | 'nl_horeca_pos'
-  | 'uk_ltd_vat';
+  | 'uk_ltd_itsa'
+  | 'uk_ltd_vat'
+  | 'us_corp_1120';
 
 export type TodoItemType =
   | 'document_request'
+  | 'grni_accrual'
   | 'payment'
   | 'period'
   | 'process_document'
