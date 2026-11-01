@@ -1,0 +1,215 @@
+# Documents (Wave 4.3, 4.4): layout presets, templates, partner rendering, fonts and custom domains.
+
+fragment SdkDocumentLayoutFields on PlatformDocumentLayout {
+  id
+  documentType
+  locale
+  name
+  layout
+  isDefault
+  companyEditable
+  unlockedBlockIds
+  status
+  version
+  updated
+  warnings {
+    ruleId
+    field
+    message
+    severity
+    legalRef
+    verifyWithAdviser
+  }
+}
+
+fragment SdkDocumentTemplateFields on DocumentTemplate {
+  id
+  documentType
+  locale
+  name
+  status
+  version
+  isDefault
+  validationReport
+  updated
+}
+
+fragment SdkDocumentRenderJobFields on DocumentRenderJob {
+  id
+  documentType
+  entityId
+  status
+  deadline
+  artifactId
+  violations {
+    ruleId
+    field
+    message
+    severity
+    legalRef
+    verifyWithAdviser
+  }
+}
+
+query SdkPlatformDocumentLayouts($documentType: DocumentType) {
+  platformDocumentLayouts(documentType: $documentType) {
+    ...SdkDocumentLayoutFields
+  }
+}
+
+query SdkPlatformDocumentLayoutPreview($id: ID!, $format: String) {
+  platformDocumentLayoutPreview(id: $id, format: $format)
+}
+
+query SdkValidateDocumentLayout($documentType: DocumentType!, $layout: JSONObject!) {
+  validateDocumentLayout(documentType: $documentType, layout: $layout) {
+    ruleId
+    field
+    message
+    severity
+    legalRef
+    verifyWithAdviser
+  }
+}
+
+mutation SdkUpsertPlatformDocumentLayout($input: UpsertPlatformDocumentLayoutInput!) {
+  upsertPlatformDocumentLayout(input: $input) {
+    ...SdkDocumentLayoutFields
+  }
+}
+
+mutation SdkActivatePlatformDocumentLayout($id: ID!, $makeDefault: Boolean!) {
+  activatePlatformDocumentLayout(id: $id, makeDefault: $makeDefault) {
+    ...SdkDocumentLayoutFields
+  }
+}
+
+mutation SdkArchivePlatformDocumentLayout($id: ID!) {
+  archivePlatformDocumentLayout(id: $id) {
+    ...SdkDocumentLayoutFields
+  }
+}
+
+mutation SdkChooseDocumentLayout($profileId: ID!, $documentType: DocumentType!, $platformDocumentLayoutId: ID!) {
+  chooseDocumentLayout(profileId: $profileId, documentType: $documentType, platformDocumentLayoutId: $platformDocumentLayoutId)
+}
+
+query SdkDocumentTemplates($documentType: DocumentType) {
+  documentTemplates(documentType: $documentType) {
+    ...SdkDocumentTemplateFields
+  }
+}
+
+query SdkDocumentTemplatePreview($id: ID!, $fixture: String!) {
+  documentTemplatePreview(id: $id, fixture: $fixture)
+}
+
+mutation SdkUpsertDocumentTemplate($input: UpsertDocumentTemplateInput!) {
+  upsertDocumentTemplate(input: $input) {
+    ...SdkDocumentTemplateFields
+  }
+}
+
+mutation SdkValidateDocumentTemplate($id: ID!) {
+  validateDocumentTemplate(id: $id) {
+    ...SdkDocumentTemplateFields
+  }
+}
+
+mutation SdkActivateDocumentTemplate($id: ID!, $makeDefault: Boolean!) {
+  activateDocumentTemplate(id: $id, makeDefault: $makeDefault) {
+    ...SdkDocumentTemplateFields
+  }
+}
+
+mutation SdkArchiveDocumentTemplate($id: ID!) {
+  archiveDocumentTemplate(id: $id) {
+    ...SdkDocumentTemplateFields
+  }
+}
+
+query SdkPlatformDocumentRenderSettings {
+  platformDocumentRenderSettings {
+    documentType
+    mode
+    timeoutSeconds
+  }
+}
+
+mutation SdkSetPlatformDocumentRenderSetting($documentType: DocumentType!, $mode: DocumentRenderMode!, $timeoutSeconds: Int) {
+  setPlatformDocumentRenderSetting(documentType: $documentType, mode: $mode, timeoutSeconds: $timeoutSeconds) {
+    documentType
+    mode
+    timeoutSeconds
+  }
+}
+
+query SdkDocumentRenderJob($id: ID!) {
+  documentRenderJob(id: $id) {
+    ...SdkDocumentRenderJobFields
+  }
+}
+
+mutation SdkAttachRenderedDocument($jobId: ID!, $pdfBase64: String, $uploadId: ID) {
+  attachRenderedDocument(jobId: $jobId, pdfBase64: $pdfBase64, uploadId: $uploadId) {
+    ...SdkDocumentRenderJobFields
+  }
+}
+
+query SdkBrandFonts($ownerType: String!, $ownerId: ID) {
+  brandFonts(ownerType: $ownerType, ownerId: $ownerId) {
+    id
+    family
+    weight
+    style
+    sizeBytes
+    sha256
+  }
+}
+
+mutation SdkDeleteBrandFont($id: ID!) {
+  deleteBrandFont(id: $id)
+}
+
+query SdkPlatformCustomDomains {
+  platformCustomDomains {
+    id
+    hostname
+    status
+    cnameTarget
+    txtName
+    txtValue
+    lastCheckedAt
+    error
+  }
+}
+
+mutation SdkAddPlatformCustomDomain($hostname: String!) {
+  addPlatformCustomDomain(hostname: $hostname) {
+    id
+    hostname
+    status
+    cnameTarget
+    txtName
+    txtValue
+    lastCheckedAt
+    error
+  }
+}
+
+mutation SdkCheckPlatformCustomDomain($id: ID!) {
+  checkPlatformCustomDomain(id: $id) {
+    id
+    hostname
+    status
+    cnameTarget
+    txtName
+    txtValue
+    lastCheckedAt
+    error
+  }
+}
+
+mutation SdkRemovePlatformCustomDomain($id: ID!) {
+  removePlatformCustomDomain(id: $id)
+}

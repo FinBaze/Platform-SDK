@@ -1,0 +1,78 @@
+# Policies (Wave 4.6): versioned settings with per-company overrides and sandbox -> production promotion.
+
+fragment SdkPolicyVersionFields on PlatformPolicyVersion {
+  id
+  kind
+  version
+  status
+  payload
+  checksum
+  activatedAt
+  promotedFrom
+}
+
+query SdkPlatformPolicies($kind: PolicyKind, $status: PolicyStatus) {
+  platformPolicies(kind: $kind, status: $status) {
+    ...SdkPolicyVersionFields
+  }
+}
+
+query SdkPolicySchemas {
+  policySchemas
+}
+
+query SdkEffectivePolicy($kind: PolicyKind!, $companyId: ID!) {
+  effectivePolicy(kind: $kind, companyId: $companyId)
+}
+
+query SdkCompanyPolicyOverrides($companyId: ID!) {
+  companyPolicyOverrides(companyId: $companyId) {
+    kind
+    payload
+    version
+    setBy
+  }
+}
+
+mutation SdkCreatePolicyDraft($kind: PolicyKind!, $payload: JSONObject!) {
+  createPolicyDraft(kind: $kind, payload: $payload) {
+    ...SdkPolicyVersionFields
+  }
+}
+
+mutation SdkActivatePolicyVersion($id: ID!) {
+  activatePolicyVersion(id: $id) {
+    ...SdkPolicyVersionFields
+  }
+}
+
+mutation SdkSetCompanyPolicyOverride($companyId: ID!, $kind: PolicyKind!, $payload: JSONObject!) {
+  setCompanyPolicyOverride(companyId: $companyId, kind: $kind, payload: $payload)
+}
+
+mutation SdkClearCompanyPolicyOverride($companyId: ID!, $kind: PolicyKind!) {
+  clearCompanyPolicyOverride(companyId: $companyId, kind: $kind)
+}
+
+mutation SdkPromotePlatformPolicies($kinds: [PolicyKind!]) {
+  promotePlatformPolicies(kinds: $kinds)
+}
+
+mutation SdkPreviewPolicyImport($bundleId: String!) {
+  previewPolicyImport(bundleId: $bundleId) {
+    importId
+    warnings
+    changes {
+      kind
+      added
+      changed
+      removed
+    }
+  }
+}
+
+mutation SdkConfirmPolicyImport($importId: ID!) {
+  confirmPolicyImport(importId: $importId) {
+    ...SdkPolicyVersionFields
+  }
+}
